@@ -1,0 +1,341 @@
+{% extends 'layouts/vertical.html' %}
+
+{% load static i18n %}
+
+{% block title %}Edit Customer{% endblock title %}
+
+{% block extra_css %}
+
+<!-- Dropzone Plugin CSS -->
+<link href="{% static 'plugins/dropzone/dropzone.css' %}" rel="stylesheet" type="text/css">
+
+<!-- Quill css -->
+<link href="{% static 'plugins/quill/quill.core.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/quill/quill.snow.css' %}" rel="stylesheet" type="text/css">
+
+<style>
+  .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+  .btn-save {
+    background-color: #28a745;
+    border-color: #28a745;
+  }
+  .btn-save:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+  }
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .loading-spinner {
+    color: white;
+    font-size: 1.5rem;
+  }
+</style>
+
+{% endblock extra_css %}
+
+{% block page_content %}
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <div class="mt-2">Loading...</div>
+  </div>
+</div>
+
+<div class="container-fluid">
+
+  {% include 'partials/page-title.html' with title='Edit Customer' subtitle='Customer Management' %}
+
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="row">
+        <div class="col-xxl-8">
+          <div class="card">
+            <div class="card-header d-block p-3">
+              <h4 class="card-title mb-1">Customer Details</h4>
+              <p class="text-muted mb-0">Edit customer information</p>
+            </div> <!-- end card-header -->
+
+            <div class="card-body">
+              <form id="editCustomerForm">
+                <!-- Hidden fields for tracking -->
+                <input type="hidden" id="branchRno" name="branch_rno" value="">
+                <input type="hidden" id="originalCustomerRno" name="original_customer_rno" value="">
+                
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="customerName" class="form-label">Customer Name <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="customerName" name="customer_name" required>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label for="customerRno" class="form-label">Customer No <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="customerRno" name="customer_rno" required readonly>
+                      <small class="text-muted">Customer number cannot be changed</small>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label for="icNumber" class="form-label">IC Number <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="icNumber" name="ic_number" required>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label for="phoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="phoneNumber" name="phone_number" required>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="mb-3">
+                      <label for="branchRnoDisplay" class="form-label">Branch No</label>
+                      <input type="text" class="form-control" id="branchRnoDisplay" readonly>
+                      <small class="text-muted">Branch number cannot be changed</small>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="address1" class="form-label">Address 1</label>
+                      <input type="text" class="form-control" id="address1" name="address1">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="address2" class="form-label">Address 2 <span class="text-muted">(Optional)</span></label>
+                      <input type="text" class="form-control" id="address2" name="address2">
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div> <!-- end card-body-->
+          </div> <!-- end card-->
+
+        </div> <!-- end col-->
+
+      </div> <!-- end row-->
+
+      <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+        <button type="button" id="saveButton" class="btn btn-success btn-save">
+          <i class="fas fa-save me-2"></i> Update Customer
+        </button>
+        <button type="button" id="backButton" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i> Back to List
+        </button>
+      </div>
+    </div> <!-- end col-->
+  </div> <!-- end row-->
+
+</div>
+<!-- container -->
+
+{% endblock page_content %}
+
+{% block extra_javascript %}
+
+<!-- Quill Editor js -->
+<script src="{% static 'plugins/quill/quill.js' %}"></script>
+
+<!-- Dropzone File Upload js -->
+<script src="{% static 'plugins/dropzone/dropzone-min.js' %}"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 顯示加載遮罩
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    
+    // 隱藏加載遮罩
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // 從URL參數中獲取客戶信息和返回URL
+    function getUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        return {
+            branch_rno: urlParams.get('branch_rno'),
+            customer_rno: urlParams.get('customer_rno'),
+            return_url: urlParams.get('return_url')  // 默認返回URL
+            
+        };
+    }
+
+    // 獲取返回URL
+    function getReturnUrl() {
+        const params = getUrlParams();
+        console.log();
+        return decodeURIComponent(params.return_url);
+    }
+
+    // 加載客戶數據
+    function loadCustomerData() {
+        const params = getUrlParams();
+        
+        if (!params.branch_rno || !params.customer_rno) {
+            alert('Missing customer parameters. Redirecting to customer list.');
+            window.location.href = getReturnUrl();
+            return;
+        }
+
+        showLoading();
+
+        $.ajax({
+            url: '/api/get-customer/',
+            type: 'GET',
+            data: {
+                'branch_rno': params.branch_rno,
+                'customer_rno': params.customer_rno
+            },
+            success: function(response) {
+                if (response.success && response.data) {
+                    populateForm(response.data);
+                } else {
+                    alert('Customer not found: ' + (response.error || 'Unknown error'));
+                    window.location.href = getReturnUrl();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Load customer error:', error);
+                alert('Failed to load customer data. Please try again.');
+                window.location.href = getReturnUrl();
+            },
+            complete: function() {
+                hideLoading();
+            }
+        });
+    }
+
+    // 填充表單數據
+    function populateForm(data) {
+        document.getElementById('branchRno').value = data.branch_rno || '';
+        document.getElementById('branchRnoDisplay').value = data.branch_rno || '';
+        document.getElementById('originalCustomerRno').value = data.customer_rno || '';
+        document.getElementById('customerRno').value = data.customer_rno || '';
+        document.getElementById('customerName').value = data.name || '';
+        document.getElementById('icNumber').value = data.icno || '';
+        document.getElementById('phoneNumber').value = data.phone1 || '';
+        document.getElementById('address1').value = data.inv_address1 || '';
+        document.getElementById('address2').value = data.inv_address2 || '';
+        
+        console.log('Form populated with data:', data);
+    }
+
+    // 保存客戶數據
+    function saveCustomer() {
+        const form = document.getElementById('editCustomerForm');
+        const formData = new FormData(form);
+        
+        // 驗證必填字段
+        const customerName = formData.get('customer_name').trim();
+        const icNumber = formData.get('ic_number').trim();
+        const phoneNumber = formData.get('phone_number').trim();
+        
+        if (!customerName) {
+            alert('Customer name is required');
+            return;
+        }
+        
+        if (!icNumber) {
+            alert('IC number is required');
+            return;
+        }
+        
+        if (!phoneNumber) {
+            alert('Phone number is required');
+            return;
+        }
+
+        showLoading();
+        
+        // 顯示保存按鈕載入狀態
+        const saveBtn = document.getElementById('saveButton');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating...';
+        saveBtn.disabled = true;
+
+        $.ajax({
+            url: '/api/update-customer/',
+            type: 'POST',
+            data: {
+                'branch_rno': formData.get('branch_rno'),
+                'original_customer_rno': formData.get('original_customer_rno'),
+                'customer_rno': formData.get('customer_rno'),
+                'customer_name': customerName,
+                'ic_number': icNumber,
+                'phone_number': phoneNumber,
+                'address1': formData.get('address1').trim(),
+                'address2': formData.get('address2').trim()
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Customer updated successfully!');
+                    // 導航回原來的頁面
+                    window.location.href = getReturnUrl();
+                } else {
+                    alert('Error: ' + (response.error || 'Failed to update customer'));
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Update customer error:', error);
+                alert('Failed to update customer. Please try again.');
+            },
+            complete: function() {
+                hideLoading();
+                // 恢復按鈕狀態
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+    }
+
+    // 綁定保存按鈕事件
+    document.getElementById('saveButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        saveCustomer();
+    });
+
+    // 綁定返回按鈕事件
+    document.getElementById('backButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = getReturnUrl();
+    });
+
+    // 表單提交事件（支持 Enter 鍵提交）
+    document.getElementById('editCustomerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveCustomer();
+    });
+
+    // 頁面加載時加載客戶數據
+    loadCustomerData();
+});
+</script>
+
+{% endblock extra_javascript %}

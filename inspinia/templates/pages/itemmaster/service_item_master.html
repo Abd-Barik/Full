@@ -1,0 +1,146 @@
+{% extends 'layouts/vertical.html' %}
+{% block title %}Service Item Master{% endblock title %}
+
+{% block page_content %}
+{% load static i18n %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="{% static 'plugins/datatables/fixedHeader.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<style>
+  div.bottom-row {
+    display: flex;
+    justify-content: space-between; /* or center/space-around */
+    align-items: center;
+    margin-top: 10px;
+    border-top: 1px solid #ddd;
+    padding-top: 5px;
+}
+
+#service_item_master_table_wrapper .dataTables_scrollBody {
+    max-height: 400px;
+    overflow-y: auto;
+}
+th {
+  white-space: nowrap;   /* 不允许换行 */
+}
+
+
+
+</style>
+{% endblock extra_css %}
+<div class="container-fluid">
+   {% include 'partials/page-title.html' with title='Service Item Master' %}
+<div class="col-12 ">
+  <div class="card">
+    <div class="card-header">
+      <form id="filterform">
+        {% csrf_token %}
+        <div class="row g-3">
+
+          <div class="col-md-3">
+            <label class="form-label">Item No:</label>
+            <input type="text" id="" name="itemno" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Item Name:</label>
+            <input type="text" id="" name="itemname" class="form-control">
+          </div>
+
+          <!-- Submit 按钮 -->
+          <div class="col-md-3">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search me-2"></i>Submit
+            </button>
+          </div>
+
+          <!-- Add New 按钮 -->
+          <div class="col-md-3">
+            <label class="form-label">&nbsp;</label>
+            <button type="button" class="btn btn-primary w-100" id="addNewBtn">
+              <i class="fas fa-plus me-2"></i>Add New
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- 在card-body中修改表格容器结构 -->
+    <div class="card-body p-0">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="px-4 py-3 border-end border-dashed">
+            <!-- 移除原有的table-responsive类 -->
+            <div class="table-responsive">
+              <table id="service_item_master_table" class="table table-striped align-middle mb-0" >
+                <thead>
+                  <tr>
+                    <th data-field="index">No.</th>
+                    <th data-field="action">Action</th>
+                    <th data-field="referenceno">Ref No.</th>
+                    <th data-field="branch">Branch/Department</th>
+                    <th data-field="itemno">Item No</th>
+                    <th data-field="itemname">Item Name</th>
+                    <th data-field="active">Active</th>
+                    <th data-field="billgroup">Billing Group</th>
+                    <th data-field="price">Sales Price</th>
+                    <th data-field="unitcost">Cost Price</th>
+                    <th data-field="taxableiterm">Taxable Item</th>
+                    <th data-field="taxrate">Tax Rate</th>
+                    <th data-field="labelprint">Label Print</th>
+                    <th data-field="createdby">Created by</th>
+                    <th data-field="createdon">Created on</th>
+                    <th data-field="modifiedby">Modified by</th>
+                    <th data-field="modifiedon">Modified on</th>
+                  </tr>
+                </thead>
+                <tbody id="service_item_master_table_body" >
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>   
+  </div> <!-- end card-->
+</div> <!-- end col-->
+
+<!-- Save successful table -->
+<div class="modal fade" id="save-table" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myCenterModalLabel">Information</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h5 class="mt-0" style="font-size: large; text-align:center;">Save Successful</h5>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% include "pages/itemmaster/stock_item_master_delete_modal.html" %}
+
+{% endblock page_content %}
+{% block extra_javascript %}
+
+<!-- Datatables js -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/fixedHeader.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.fixedHeader.min.js' %}"></script>
+
+<!-- Page js -->
+
+<script src="{% static 'js/pages/itemmaster/service_item_master.js' %}"></script>
+
+
+
+{% endblock extra_javascript %}

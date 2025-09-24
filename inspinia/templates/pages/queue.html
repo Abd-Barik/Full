@@ -1,0 +1,716 @@
+{% load static i18n %}
+{% block extra_css %}
+<style>
+  .choices__list--dropdown, 
+.choices__list[aria-expanded] {
+    z-index: 9999 !important;
+}
+
+/* 表格容器優化 - 限制到 .appointments-table-container */
+.appointments-table-container {
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* 減少左右內邊距 - 限制到 appointments-section */
+.appointments-section .px-4 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* 表格基礎樣式 - 限制到 .appointments-table-container 內的表格 */
+.appointments-table-container #horizontal-scroll {
+  table-layout: auto;
+  margin-bottom: 0;
+  width: auto;
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+/* 表格頭部樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 表格行樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll tbody tr:hover {
+  background-color: rgba(0,123,255,0.05);
+}
+
+/* 第一欄 (No.) 固定樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th:nth-child(1),
+.appointments-table-container #horizontal-scroll td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 11;
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+/* 第二欄 (Action) 固定樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th:nth-child(2),
+.appointments-table-container #horizontal-scroll td:nth-child(2) {
+  position: sticky;
+  left: var(--col1-width, 60px);
+  top: 0;
+  z-index: 11;
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* 第三欄 (Name) 固定樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th:nth-child(3),
+.appointments-table-container #horizontal-scroll td:nth-child(3) {
+  position: sticky;
+  left: var(--col1-2-width, 200px);
+  top: 0;
+  z-index: 11;
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+.appointments-table-container #horizontal-scroll thead th:nth-child(1) {
+  cursor: default !important; /* 覆蓋任何拖拽樣式 */
+  user-select: none;
+}
+
+.appointments-table-container #horizontal-scroll thead th:nth-child(1):hover {
+  background-color: #e9ecef !important; /* 保持原始背景色 */
+}
+
+/* 固定列的表頭特殊樣式 - 限制到 .appointments-table-container */
+.sticky-columns-initialized .appointments-table-container #horizontal-scroll thead th:nth-child(2),
+.sticky-columns-initialized .appointments-table-container #horizontal-scroll thead th:nth-child(3) {
+  background-color: #e9ecef;
+  z-index: 15;
+}
+
+/* 其他欄位的樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)),
+.appointments-table-container #horizontal-scroll td:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)) {
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* 確保第一欄不會顯示拖拽相關的視覺效果 */
+.appointments-table-container #horizontal-scroll thead th:nth-child(1)[draggable] {
+  cursor: default !important;
+}
+
+/* 拖拽時的視覺反饋 - 排除第一欄 */
+.appointments-table-container #horizontal-scroll thead th.drag-over:not(:nth-child(1)) {
+  border-left: 2px solid #007bff;
+}
+
+/* 確保第一欄在拖拽時不會有邊框效果 */
+.appointments-table-container #horizontal-scroll thead th:nth-child(1).drag-over {
+  border-left: none !important;
+}
+
+/* Hide and Show 下拉選單樣式 */
+.appointments-table-container .hide-show-dropdown {
+  font-family: inherit;
+  font-size: 14px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  position: absolute;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item:hover:not([style*="not-allowed"]) {
+  background-color: #f8f9fa;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item[style*="not-allowed"] {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.appointments-table-container .hide-show-dropdown label {
+  margin: 0;
+  font-weight: normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.appointments-table-container .hide-show-dropdown label[style*="not-allowed"] {
+  cursor: not-allowed;
+}
+
+.appointments-table-container .hide-show-dropdown input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.1);
+}
+
+.appointments-table-container .hide-show-dropdown input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+/* 下拉選單標題樣式 */
+.appointments-table-container .hide-show-dropdown .dropdown-header {
+  padding: 8px 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  color: #666;
+  background-color: #f8f9fa;
+}
+
+/* 自定義滾動條樣式 */
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Hide and Show 按鈕樣式優化 */
+.appointments-table-container #HideAndShowBtn {
+  position: relative;
+}
+
+.appointments-table-container #HideAndShowBtn:after {
+  content: " ▼";
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.appointments-table-container .column-hidden-indicator {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+/* 所有cell的基本樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th,
+.appointments-table-container #horizontal-scroll td {
+  white-space: nowrap;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+/* 動作按鈕樣式優化 - 限制到 .appointments-table-container */
+.appointments-table-container .action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.appointments-table-container .action-buttons .btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.appointments-table-container .action-buttons .btn i {
+  font-size: 12px;
+}
+
+/* 徽章樣式優化 - 限制到 .appointments-table-container */
+.appointments-table-container .badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.appointments-table-container .bg-pink {
+  background-color: #e83e8c !important;
+}
+
+/* 貨幣對齊 - 限制到 .appointments-table-container */
+.appointments-table-container .text-end {
+  text-align: right !important;
+}
+
+/* 文字內容樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll td[title] {
+  cursor: help;
+}
+
+/* 響應式調整 - 限制到 appointments-section */
+@media (max-width: 768px) {
+  .appointments-section .px-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .appointments-table-container .action-buttons .btn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  
+  .appointments-table-container .action-buttons .btn i {
+    font-size: 10px;
+  }
+  
+  .appointments-table-container #horizontal-scroll th,
+  .appointments-table-container #horizontal-scroll td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .appointments-table-container .hide-show-dropdown {
+    min-width: 180px;
+    max-height: 250px;
+    font-size: 13px;
+  }
+  
+  .appointments-table-container .hide-show-dropdown .dropdown-item {
+    padding: 6px 10px;
+  }
+  
+  .appointments-table-container .table-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+/* 載入狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .loading-row {
+  background-color: #f8f9fa;
+}
+
+.appointments-table-container .loading-row td {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* 錯誤狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .error-row {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* 空數據狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .no-data-row {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* 分頁樣式優化 - 限制到 .appointments-section */
+.appointments-section .pagination .page-link {
+  padding: 6px 12px;
+  margin: 0 2px;
+}
+
+.appointments-section .pagination .page-item.active .page-link {
+  background-color: #007bff;
+}
+
+/* 確保滾動條樣式 - 限制到 .appointments-table-container */
+.appointments-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.appointments-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.appointments-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+}
+
+.appointments-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 表頭拖拽效果 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th[draggable="true"] {
+  cursor: move;
+  user-select: none;
+}
+
+.appointments-table-container #horizontal-scroll thead th[draggable="true"]:hover {
+  background-color: #e9ecef;
+}
+
+/* 拖拽時的視覺反饋 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th.drag-over {
+  border-left: 2px solid #007bff;
+}
+
+/* 表格控制按鈕樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .table-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.appointments-table-container .table-controls .btn {
+  font-size: 12px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 滾動陰影效果 - 限制到 .appointments-table-container */
+.appointments-table-container.has-left-shadow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.appointments-table-container.has-right-shadow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 状态下拉框样式 - 限制到 .appointments-section */
+.appointments-section .dropdown-item.selected {
+  background-color: #f8f9fa;
+}
+
+.appointments-section .dropdown-item:hover {
+  background-color: #e9ecef;
+}
+
+.appointments-section .dropdown-item .form-check-input {
+  margin-right: 8px;
+}
+</style>
+{% endblock extra_css %}
+
+<div class="col-12 appointments-section">
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="row g-0">
+        <!-- Left Sidebar (col-xxl-2) -->
+        
+
+        <!-- Right Main Content (col-xxl-10) -->
+        <div class="col-12">
+          <div class="px-4 py-3 border-end border-dashed">
+            
+
+            <!-- Filters -->
+            <div class="filter-section mb-4">
+              <div class="border p-3 mb-3 rounded">
+                <form id="filterform">
+                  {% csrf_token %}
+                  <div class="row g-3">
+                    <div class="col-md-2">
+                      <label class="form-label">Branch/Department:</label>
+                      <select class="form-control" name="branch_rno" data-choices data-choices-search-true>
+                        {% for branch in branches %}
+                          <option value="{{ branch.branch_rno }}" {% if branch.branch_rno == selected_branch %}selected{% endif %}>
+                            {{ branch.branch_name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label">From:</label>
+                      <input type="date" class="form-control" data-provider="flatpickr" data-date-format="Y-m-d" name="start_date">
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label">To:</label>
+                      <input type="date" class="form-control" data-provider="flatpickr" data-date-format="Y-m-d" name="end_date">
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label">Visit Type:</label>
+                      <select class="form-select" name="visittype">
+                        <option value="O">Outpatient</option>
+                        <option value="I">Inpatient</option>
+                        <option value="E">Others</option>
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label">Status:</label>
+                      <div class="dropdown">
+                          <button class="btn btn-outline-secondary  w-100 text-start" type="button" 
+                                  id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                              <span id="selectedCount">7 Selected</span>
+                          </button>
+                          <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+                              <li>
+                                  <div class="dropdown-item selected" data-value="IN">
+                                      <input class="form-check-input" type="checkbox" value="IN" id="bs-in" checked>
+                                      <label class="form-check-label" for="bs-in">IN</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="CL">
+                                      <input class="form-check-input" type="checkbox" value="CL" id="bs-cl" checked>
+                                      <label class="form-check-label" for="bs-cl">CL</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="CN">
+                                      <input class="form-check-input" type="checkbox" value="CN" id="bs-cn" checked>
+                                      <label class="form-check-label" for="bs-cn">CN</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="FN">
+                                      <input class="form-check-input" type="checkbox" value="FN" id="bs-fn" checked>
+                                      <label class="form-check-label" for="bs-fn">FN</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="DP">
+                                      <input class="form-check-input" type="checkbox" value="DP" id="bs-dp" checked>
+                                      <label class="form-check-label" for="bs-dp">DP</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="FD">
+                                      <input class="form-check-input" type="checkbox" value="FD" id="bs-fd" checked>
+                                      <label class="form-check-label" for="bs-fd">FD</label>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="dropdown-item selected" data-value="FC">
+                                      <input class="form-check-input" type="checkbox" value="FC" id="bs-fc" checked>
+                                      <label class="form-check-label" for="bs-fc">FC</label>
+                                  </div>
+                              </li>
+                          </ul>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label">&nbsp;</label>
+                      <button class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Submit
+                      </button>
+                    </div>
+                  </div>   
+                </form>      
+              </div>
+            </div>
+
+            <!-- Appointments Table -->
+            <div class="appointments-table-container border p-3 rounded">
+              <div class="table-controls mb-2">
+                <button id="HideAndShowBtn" class="btn btn-sm btn-light">Hide and Show</button>
+                <button id="saveOrderBtn" class="btn btn-sm btn-primary">💾 Save</button>
+                <button id="resetOrderBtn" class="btn btn-sm btn-secondary">🔄 Reset</button>
+              </div>
+              <div style="height: 400px; overflow-x: auto; overflow-y: auto;">
+                <table id="horizontal-scroll" class="table table-striped align-middle mb-0" >
+                  <thead class="thead-sm text-uppercase fs-xxs">
+                    <tr>
+                      <th data-field="index">No.</th>
+                      <th data-field="action">Action</th>
+                      <th data-field="name">Name</th>
+                      <th data-field="eInvoiceStatus">eInvoice Status</th>
+                      <th data-field="visitdate">Date</th>
+                      <th data-field="ticketno">Ticket</th>
+                      <th data-field="queuno">Queue</th>
+                      <th data-field="room">Room</th>
+                      <th data-field="shift">Shift</th>
+                      <th data-field="customerno">Customer No.</th>
+                      <th data-field="icno">IC or Passport</th>
+                      <th data-field="gender">Gender</th>
+                      <th data-field="patient_age">Age on date</th>
+                      <th data-field="billtype">Billing Type</th>
+                      <th data-field="pcompanyname">Panel Company</th>
+                      <th data-field="doctorname">Doctor Name</th>
+                      <th data-field="status">Status</th>
+                      <th data-field="mcdays">M.C</th>
+                      <th data-field="buydrug">Buy Product</th>
+                      <th data-field="nettotalamount">Total Amount</th>
+                      <th data-field="netcashamount">Customer Pay</th>
+                      <th data-field="netinvoiceamount">Corp Pay</th>
+                      <th data-field="paidamount">Paid Amount</th>
+                      <th data-field="cashamt">Cash Amt</th>
+                      <th data-field="cardamt">Card Amt</th>
+                      <th data-field="chequeamt">Cheque Amt</th>
+                      <th data-field="mobileamt">E-wallet</th>
+                      <th data-field="onlineamt">Online Amt</th>
+                      <th data-field="remark">Complaint/Remark</th>
+                      <th data-field="chitno">Chit No.</th>
+                      <th data-field="dispensary_checkedby">Dispensary checked by</th>
+                      <th data-field="nextaptdate">Next Appointment Date</th>
+                      <th data-field="cnwaiting_mins">Waiting Time (IN)</th>
+                      <th data-field="typeofconsult">Consult type</th>
+                      <th data-field="eInvoiceSubmitted">Einvoice Submitted</th>
+                      <th data-field="customer_remark">Customer Remark</th>
+                      <th data-field="isforeigner">Foreigner</th>
+                      <th data-field="createdby">Counsuly Current Access by</th>
+                    </tr>
+                  </thead>
+                  <tbody id="appointmentsTableBody">
+                    <!-- Data will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div> <!-- end .px-4-->
+        </div> <!-- end col-->
+      </div> <!-- end row-->
+    </div> <!-- end card-body-->
+  </div> <!-- end card-->
+</div> <!-- end col-->
+
+<!-- Save successful table -->
+<div class="modal fade" id="save-table" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myCenterModalLabel">Information</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h5 class="mt-0" style="font-size: large; text-align:center;">Save Successful</h5>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_javascript %}
+
+<!-- Datatables js -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/responsive.bootstrap5.min.js' %}"></script>
+<!-- Page js -->
+<script src="{% static 'js/pages/reusableTableFormatter.js' %}"></script>
+<script src="{% static 'js/pages/customer_queue.js' %}"></script>
+
+
+
+<script>
+  
+document.addEventListener("DOMContentLoaded", () => {
+    const elements = document.querySelectorAll('[data-choices]');
+    if (elements && elements.length > 0) {
+        elements.forEach(item => {
+            const config = {
+                placeholderValue: item.hasAttribute("data-choices-groups") ? "This is a placeholder set in the config" : undefined,
+                searchEnabled: item.hasAttribute("data-choices-search-true"),
+                removeItemButton: item.hasAttribute("data-choices-removeItem") || item.hasAttribute("data-choices-multiple-remove"),
+                shouldSort: !item.hasAttribute("data-choices-sorting-false"),
+                maxItemCount: item.getAttribute("data-choices-limit") || undefined,
+                duplicateItemsAllowed: !item.hasAttribute("data-choices-text-unique-true"),
+                addItems: !item.hasAttribute("data-choices-text-disabled-true")
+            };
+            const instance = new Choices(item, config);
+            if (item.hasAttribute("data-choices-text-disabled-true")) instance.disable();
+        });
+    }
+    const dropdownItems = document.querySelectorAll('.appointments-section .dropdown-item[data-value]');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        
+        // 点击整个区域切换选择状态
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation(); // 阻止下拉框关闭
+                
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                
+                // 切换 checkbox 状态
+                checkbox.checked = !checkbox.checked;
+                
+                // 切换视觉样式
+                if (checkbox.checked) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+                
+                // 更新选中数量显示
+                updateSelectedCount();
+            });
+        });
+        
+        function updateSelectedCount() {
+            const selectedCount = document.querySelectorAll('.appointments-section .dropdown-item input[type="checkbox"]:checked').length;
+            selectedCountSpan.textContent = `${selectedCount} Selected`;
+        }
+        
+        // 获取所有选中的值
+        function getSelectedValues() {
+            const checkedCheckboxes = document.querySelectorAll('.appointments-section .dropdown-item input[type="checkbox"]:checked');
+            return Array.from(checkedCheckboxes).map(checkbox => checkbox.value);
+        }
+        
+        // 设置选中的值
+        function setSelectedValues(values) {
+            dropdownItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const shouldBeChecked = values.includes(checkbox.value);
+                
+                checkbox.checked = shouldBeChecked;
+                
+                if (shouldBeChecked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            updateSelectedCount();
+        }
+        
+        // 清空所有选择
+        function clearAll() {
+            setSelectedValues([]);
+        }
+        
+        // 全选
+        function selectAll() {
+            const allValues = Array.from(dropdownItems).map(item => item.dataset.value);
+            setSelectedValues(allValues);
+        }
+})
+
+</script>
+{% endblock extra_javascript %}

@@ -1,0 +1,159 @@
+<!-- 验证码输入模态框 -->
+<div class="modal fade" id="securityCodeModal" tabindex="-1" aria-labelledby="securityCodeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white py-2 px-3">
+        <h6 class="modal-title mb-0" id="securityCodeModalLabel">Security Verification</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- 密码输入 -->
+        <div class="mb-3">
+          <label for="securityCodeInput" class="form-label">
+            <i class="bi bi-key-fill me-1"></i>Enter Security Code:
+          </label>
+          <input type="password" 
+                 class="form-control" 
+                 id="securityCodeInput" 
+                 placeholder="Enter security code"
+                 autocomplete="off">
+          <small class="text-muted">Required for security verification</small>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #fff2f2; padding: 6px 8px;">
+        <button type="button" class="btn btn-danger btn-sm px-3" id="verifySecurityCodeBtn">Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Delete
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeDeleteModalBtn"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this customer?</p>
+        <div class="alert alert-warning">
+          <strong>Customer No:</strong> <span id="deleteCustomerNo"></span><br>
+          <strong>Name:</strong> <span id="deleteCustomerName"></span>
+        </div>
+        <p class="text-muted small">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+          <i class="fas fa-trash me-1"></i>Delete Customer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invalid Security Code Modal -->
+<div class="modal fade" id="passwordErrorModal" tabindex="-1" aria-labelledby="passwordErrorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 220px;">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white py-2 px-3">
+        <h6 class="modal-title mb-0" id="passwordErrorModalLabel">Information</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex align-items-center">
+        <i class="bi bi-info-circle-fill fs-1 text-secondary me-3"></i>
+        <span class="fw-bold text-primary">Invalid Security Code</span>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initializeSecureDelete() {
+    const securityCodeModal = new bootstrap.Modal(document.getElementById('securityCodeModal'));
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const passwordErrorModal = new bootstrap.Modal(document.getElementById('passwordErrorModal'));
+    const securityCodeInput = document.getElementById('securityCodeInput');
+    const verifySecurityCodeBtn = document.getElementById('verifySecurityCodeBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const closeDeleteModalBtn = document.getElementById('closeDeleteModalBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const deleteCustomerNo = document.getElementById('deleteCustomerNo');
+    const deleteCustomerName = document.getElementById('deleteCustomerName');
+
+    let currentDeleteCallback = null;
+    let currentDeleteData = null;
+
+    // 显示安全验证码输入框
+    function showSecureDeleteModal(deleteInfo) {
+     
+      currentDeleteData = deleteInfo;
+      
+      // 清空输入框并显示模态框
+      securityCodeInput.value = "";
+      securityCodeModal.show();
+    }
+
+    // 验证安全码按钮事件
+    verifySecurityCodeBtn.addEventListener('click', () => {
+      const password = securityCodeInput.value;
+      if (password === "123") {  // TODO: 改成调用后端 API 验证
+        securityCodeModal.hide();
+        
+        // 显示删除确认对话框
+        if (currentDeleteData) {
+          deleteCustomerNo.textContent = currentDeleteData.customerno || 'N/A';
+          deleteCustomerName.textContent = currentDeleteData.name || 'N/A';
+          deleteModal.show();
+        }
+      } else {
+        passwordErrorModal.show();
+        securityCodeInput.value = ""; // 清空输入框
+      }
+    });
+
+    // 确认删除按钮事件
+    confirmDeleteBtn.addEventListener('click', () => {
+      deleteModal.hide();   
+    
+    });
+
+    // 关闭删除确认模态框的按钮事件
+    closeDeleteModalBtn.addEventListener('click', () => {
+      deleteModal.hide();
+    });
+
+    // 取消删除按钮事件
+    cancelDeleteBtn.addEventListener('click', () => {
+      deleteModal.hide();
+    });
+
+    // 按 Enter 键也可以验证
+    securityCodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        verifySecurityCodeBtn.click();
+      }
+    });
+
+    // 模态框关闭时清空数据
+    [securityCodeModal, deleteModal].forEach(modal => {
+      modal._element.addEventListener('hidden.bs.modal', () => {
+        securityCodeInput.value = "";
+      });
+    });
+
+    // 全局函数供外部调用
+    window.showSecureDeleteModal = showSecureDeleteModal;
+  }
+
+  // DOM加载完成后初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeSecureDelete();
+  });
+</script>

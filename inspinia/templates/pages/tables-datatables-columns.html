@@ -1,0 +1,1241 @@
+{% extends 'layouts/vertical.html' %}
+
+{% load static i18n %}
+
+{% block title %}Customer Data{% endblock title %}
+
+{% block extra_css %}
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Dropzone Plugin CSS -->
+<link href="{% static 'plugins/dropzone/dropzone.css' %}" rel="stylesheet" type="text/css">
+
+<style>
+.card {
+  overflow: visible !important; /* 不裁掉 dropdown */
+}
+.card-body {
+  max-height: 0;           
+  overflow: hidden;           
+  opacity: 0;                 
+  transition: all 0.3s ease;   
+}
+
+.card-header {
+  border-bottom: none !important;
+}
+
+
+
+
+.card.keep-open .card-body {
+  max-height: none;
+  opacity: 1;
+}
+
+.age-inline-display {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-wrapper {
+    position: relative;
+}
+
+/* Flatpickr 自定義樣式 */
+.flatpickr-input {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.flatpickr-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* 讓日期選擇器圖標更明顯 */
+.date-input-wrapper::after {
+    content: '\1F4C5';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6c757d;
+}
+
+.photo-box {
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #b6bdc2;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #777f86;
+    font-size: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.photo-box:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.photo-box.has-image {
+    border: 2px solid #283da7;
+    background-color: transparent;
+}
+
+.photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 6px;
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 6px;
+}
+
+.photo-box.has-image:hover .photo-overlay {
+    opacity: 1;
+}
+
+.photo-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.photo-action-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.photo-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.photo-input {
+    display: none;
+}
+
+.photo-placeholder-text {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.photo-placeholder-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.5;
+}
+</style>
+{% endblock extra_css %}
+
+{% block page_content %}
+
+<div class="container-fluid">
+
+  {% include 'partials/page-title.html' with title='Customer Data' subtitle='Customer Management' %}
+
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <form id="customerForm">
+        {% csrf_token %}
+        <div class="row">
+          <!-- Main Form Column -->
+          <div class="col-xxl-8">
+            <!-- Basic Customer Information Card -->
+            <div class="card keep-open">
+              <div class="card-header d-block p-3">
+                <h4 class="card-title mb-1">Customer Information</h4>
+                <p class="text-muted mb-0">
+                  To add a new customer, please provide the necessary details in the fields below.
+                </p>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                    <!-- Required Fields Only -->
+                    <div class="col-6">
+                      <div class="mb-3">
+                        <label for="registrationDate" class="form-label">Registration Date:</label>
+                        <div class="date-input-wrapper">
+                          <input 
+                            type="text" 
+                            class="form-control" 
+                            id="opendate" 
+                            name="opendate" 
+                            placeholder="DD/MM/YYYY"
+                            data-provider="flatpickr" data-date-format="Y-m-d"
+                            value="" readonly>
+                        </div>
+                      </div>
+                    </div>
+
+                    
+
+                    <div class="col-5">
+                      <div class="mb-3">
+                        <label class="form-label">Customer Status:</label>
+                        <div style="display: flex; flex-direction: row; gap: 1.5rem; padding: 0.5rem 0; align-items: center;">
+
+                          <!-- InActive -->
+                          <div style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                            <input type="checkbox" id="accountstatus" name="accountstatus" value="1" style="width: 16px; height: 16px; accent-color: #dc3545; cursor: pointer;">
+                            <label for="accountstatus" style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0; cursor: pointer; color: #dc3545;">Inactive</label>
+                          </div>
+
+                          <!-- Foreigner -->
+                          <div style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                            <input type="checkbox" id="isforeigner" name="isforeigner" value="1" style="width: 16px; height: 16px; accent-color: #0d6efd; cursor: pointer;">
+                            <label for="isforeigner" style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0; cursor: pointer; color: #0d6efd;">Foreigner</label>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="customerno" class="form-label">Customer No:</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="customerno" name="customerno">
+                          <span class="input-group-text" id="lockicon1" style="cursor:pointer;">
+                            <i id="lockIcon" class="ti ti-lock fs-4 text-dark"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                   
+                    
+
+                    <div class="col-2">
+                      <div class="mb-3">
+                        <label for="title" class="form-label">Title:</label>
+                        <select class="form-select" id="title" name="title" data-choices data-choices-search-true>
+                          <option value=""></option>
+                            {% for title in titles %}
+                              <option value="{{ title.title }}">{{ title.title }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-10">
+                      <div class="mb-3">
+                        <label for="name" class="form-label">Customer Name : <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="name" name="name" required>
+                          <span class="input-group-text" id="lockicon2" style="cursor:pointer;">
+                            <i id="lockIcon" class="ti ti-lock fs-4 text-dark"></i>
+                          </span>
+                        </div>
+                        
+                      </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label for="icno" class="form-label">I/C No : <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="icno" name="icno" required>
+                          <span class="input-group-text" id="lockicon3" style="cursor:pointer;">
+                            <i id="lockIcon" class="ti ti-lock fs-4 text-dark"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label for="gender" class="form-label">Gender:<span class="text-danger">*</span></label>
+                        <select class="form-select" id="gender" name="gender" required>
+                          <option value="">Select Gender</option>
+                          <option value="M">M</option>
+                          <option value="F">F</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="patient_dateofbirth" class="form-label">Date of Birth : <span class="text-danger">*</span></label>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="date-input-wrapper flex-shrink-0" style="width: 465px;">
+                            <input 
+                              type="text" 
+                              class="form-control" 
+                              id="patient_dateofbirth" 
+                              name="patient_dateofbirth" 
+                              placeholder="DD/MM/YYYY"
+                              required
+                              data-provider="flatpickr" data-date-format="Y-m-d"
+                              value="">
+                          </div>
+                          <div id="ageDisplay" class="age-inline-display flex-grow-1">
+                            <span id="ageText" class="text-muted"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="phone1" class="form-label">Phone text : <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="phone1" name="phone1" required>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="address1" class="form-label">Address : <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="inv_address1" name="inv_address1" required>
+                        <input type="text" class="form-control" id="inv_address2" name="inv_address2" style="margin-top: 6.5px;">
+                        <input type="text" class="form-control" id="inv_address3" name="inv_address3" style="margin-top: 6.5px;">
+                      </div>
+                    </div>
+                    
+                    
+
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label for="patient_postcode" class="form-label">Postcode : <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="patient_postcode" name="patient_postcode" required>
+                      </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label for="state" class="form-label">State : <span class="text-danger">*</span></label>
+                        <div class="app-search">
+                          <select class="form-select my-1 my-md-0" id="statecode" name="statecode" data-choices data-choices-search-true required>
+                            <option value="">Select State</option>
+                            {% for state in states %}
+                              <option value="{{ state.code }}">{{ state.state }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" id="statename" name="state" value="">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label for="country" class="form-label">Country : <span class="text-danger">*</span></label>
+                        <div class="app-search">
+                          <select class="form-select my-1 my-md-0" id="country" name="country_code"data-choices data-choices-search-true required>
+                            <option value="">Select Country</option>
+                            {% for country in countries %}
+                              <option value="{{ country.code }}">{{ country.description }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" id="" name="country_name" value="">
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="citizenship" class="form-label">Citizenship : <span class="text-danger">*</span></label>
+                        <select class="form-select form-control" id="citizenship" name="citizenship" data-choices data-choices-search-true required>
+                          <option value="">Select Citizenship</option>
+                            {% for citizenship in citizenships %}
+                              <option value="{{ citizenship.country }}">{{ citizenship.country }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                </div>
+              </div><!-- End Card Body -->
+            </div><!-- End Card -->
+
+            <!-- Customer Photo Card -->
+            <div class="card" id="moredetailCard">
+              <div class="card-header d-block p-3" id="moredetailHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">More Details</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-9">
+                    <div class="mb-3">
+                      <label for="email" class="form-label">Email:</label>
+                      <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+                      <label for="telephone" class="form-label">Telephone:</label>
+                      <input type="text" class="form-control" id="mobileno1" name="mobileno1">
+                    </div>
+                  </div>
+
+                  <div class="col-3">
+                    <div class="mb-3">
+                      <div class="photo-box" id="photoBox" onclick="triggerPhotoUpload()">
+                        <div class="photo-placeholder-text" id="photoPlaceholder">
+                          <i data-lucide="camera" class="photo-placeholder-icon"></i>
+                          <span>Click to upload photo</span>
+                        </div>
+                              
+                        <!-- Photo preview will be inserted here -->
+                              
+                        <!-- Photo overlay for actions when image exists -->
+                        <div class="photo-overlay" id="photoOverlay">
+                          <img id="photo" src="" alt="Customer Photo" style="max-width: 150px; max-height: 150px; display: none; border-radius: 8px;" />
+
+                          <div class="photo-actions">
+                            <button type="button" class="photo-action-btn" onclick="event.stopPropagation(); triggerPhotoUpload()">
+                              <i data-lucide="edit-2" style="width: 12px; height: 12px; margin-right: 4px;"></i>
+                              Change
+                            </button>
+                            <button type="button" class="photo-action-btn" onclick="event.stopPropagation(); removePhoto()">
+                              <i data-lucide="trash-2" style="width: 12px; height: 12px; margin-right: 4px;"></i>
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
+                            
+                      <!-- Hidden file input -->
+                      <input 
+                        type="file" 
+                        id="photoInput" 
+                        name="photo" 
+                        class="photo-input" 
+                        accept="image/*"
+                        onchange="handlePhotoSelect(event)"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="customerSource" class="form-label">Customer Source:</label>
+                      <select class="form-select" id="customerSource" name="customersourcename">
+                        <option value="">Select Source</option>
+                          {% for source in sources %}
+                            <option value="{{ source.source }}">{{ source.source }}</option>
+                          {% endfor %}
+                          
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="reviewedPeriod" class="form-label">Reviewed Period:</label>
+                      <input type="text" class="form-control" id="reviewperiod" name="reviewperiod">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="membershipNo" class="form-label">Membership No:</label>
+                      <input type="text" class="form-control" id="membershipno" name="membershipno">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+              
+          <!-- Sidebar Column -->
+          <div class="col-xxl-4">
+            <!-- Panel Company Card -->
+            <div class="card">
+              <div class="card-header d-block p-3" id="moredetailHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Panel Company</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="billingtype" class="form-label">Billing Type </label>
+                    <select class="form-select" id="billtype_rno" name="patient_corpbilltype" >
+                      {% for billingtype in billingtypes %}
+                        <option value="{{ billingtype.billtype_rno }}">{{ billingtype.billtype }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                        <label for="panelcompany_rno" class="form-label">Panel Company</label>
+                        <div class="input-group">
+                            
+                            <span class="input-group-text p-0">
+                                <input type="text" name="panelcomp_rno" id="panelcompany_rno"
+                                    class="form-control border-0 text-center" style="width: 80px;" readonly>
+                            </span>
+
+                        
+                            <input type="text" name="panelcompany_name" id="panelcompany_name"
+                                class="form-control" placeholder="Enter Panel Company" readonly>
+
+                      
+                            <button type="button" class="btn btn-outline-secondary" id="panelcompany_search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                <div class="mb-3">
+                  <label for="corp_employmentno" class="form-label">Employee No</label>
+                    <input type="text" class="form-control" id="corp_employmentno" name="corp_employmentno" placeholder="Enter employee text">
+                </div>
+
+                <div class="mb-0">
+                  <label for="corp_department" class="form-label">Department</label>
+                  
+                    <select class="form-select" id="corp_department" name="corp_department">
+                      <option value="">Select Department</option>
+                      {% for department in departments %}
+                        <option value="{{ department.department_rno }}">{{ department.department }}</option>
+                      {% endfor %}
+                    </select>
+                    
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- E-Invoice Card -->
+            <div class="card">
+              <div class="card-header d-block p-3" id="einvoiceHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">E-Invoice</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="IdentificationCategory" class="form-label">Identification Category </label>
+                  
+                    <select class="form-select" id="IdentificationCategory" name="IdentificationCategory" >
+                      <option value="">Select Category</option>
+                      <option value="NRIC">NRIC</option>
+                      <option value="BRN">BRN</option>
+                      <option value="PASSPORT">PASSPORT</option>
+                      <option value="ARMY">ARMY</option>
+                    </select>
+                    
+                  
+                </div>
+
+                <div class="mb-3">
+                  <label for="taxpayerName" class="form-label">Taxpayer's Name </label>
+          
+                    <input type="text" class="form-control" id="taxpayer" name="taxpayer" placeholder="Enter taxpayer name">
+                    
+        
+                </div>
+
+                <div class="mb-3">
+                  <label for="taxpayerIC" class="form-label">Taxpayer's IC </label>
+               
+                    <input type="text" class="form-control" id="taxpayericno" name="taxpayericno" placeholder="Enter taxpayer IC">
+                    
+            
+                </div>
+
+                <div class="mb-0">
+                  <label for="customerBRN" class="form-label">Customer's BRN </label>
+                  <input type="text" class="form-control" id="customer_brn" name="customer_brn" placeholder="Enter BRN">
+                    
+       
+                </div>
+              </div>
+            </div>
+
+            
+
+            <!-- Emergency Contact Card -->
+            <div class="card" id="EmergencyContactCard">
+              <div class="card-header d-block p-3" id="EmergencyContactHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Emergency Contact</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="emergencyContactName" class="form-label">Emergency Contact:</label>
+                      <input type="text" class="form-control" id="patient_emergcontact" name="patient_emergcontact">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="contactNo" class="form-label">Contact No.:</label>
+                      <input type="text" class="form-control" id="patient_emergtel" name="patient_emergtel">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="emergencyRelationship" class="form-label">Relationship:</label>
+                      <select class="form-select form-control" id="patient_emergrelationship" name="patient_emergrelationship">
+                        <option value="">Select relationship</option>
+                        {% for relationship in relationships %}
+                        <option value="{{ relationship.relationship_rno }}">{{ relationship.relationship }}</option>
+                      {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Emergency Contact Card End -->
+
+            <!-- Other Information Card -->
+            <div class="card" id="OtherInformationCard">
+              <div class="card-header d-block p-3" id="OtherInformationHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Other Information</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="typeOfCustomer" class="form-label">Type of Customer:</label>
+                      <select class="form-select form-control" id="typeOfCustomer" name="customertype_rno">
+                        <option value="">Select Type</option>
+                        {% for type in types %}
+                        <option value="{{ type.customertype_rno }}">{{ type.customertype }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="customerGroup" class="form-label">Customer Group:</label>
+                      <select class="form-select form-control" id="customergrp_rno" name="customergrp_rno">
+                        <option >Select Group</option>
+                        {% for group in groups %}
+                        <option value="{{ group.customergrp_rno }}">{{ group.customergroup }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="race" class="form-label">Race:</label>
+                      <select class="form-select form-control" id="patient_race" name="patient_race">
+                        <option value="">Select Race</option>
+                        {% for race in races %}
+                        <option value="{{ race.race_rno }}">{{ race.race }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="maritalStatus" class="form-label">Marital Status:</label>
+                      <select class="form-select form-control" id="patient_maritalstatus" name="patient_maritalstatus">
+                        <option value="">Select Status</option>
+                        {% for status in statuses %}
+                        <option value="{{ status.maritalstatus_rno }}">{{ status.maritalstatus }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="occupational" class="form-label">Occupational:</label>
+                      <select class="form-select form-control" id="patient_occupation" name="patient_occupation">
+                        <option value="">Select Occupation</option>
+                        {% for occupation in occupations %}
+                        <option value="{{ occupation.occupation_rno }}">{{ occupation.occupation }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="preferredLanguage" class="form-label">Preferred Language:</label>
+                      <select class="form-select form-control" id="patient_language" name="patient_language">
+                        <option value="">Select Language</option>
+                        {% for language in languages %}
+                        <option value="{{ language.language_rno }}">{{ language.language }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="religion" class="form-label">Religion:</label>
+                      <select class="form-select form-control" id="patient_religion" name="patient_religion">
+                        <option value="">Select Religion</option>
+                        {% for religion in religions %}
+                        <option value="{{ religion.religion_rno }}">{{ religion.religion }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="discountLevel" class="form-label">Discount Level:</label>
+                      <select class="form-select form-control" id="discountcategory" name="discountcategory">
+                        <option >Select Discount Level</option>
+                        {% for discountlevel in discountlevels %}
+                        <option value="{{ discountlevel.discat_rno }}">{{ discountlevel.category }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Other Information Card End -->
+
+            <!-- Health Notes Card -->
+            <div class="card" id="HealthNotesCard">
+              <div class="card-header d-block p-3" id="HealthNotesHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Health Notes</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="allergyNote" class="form-label">Allergy Note:</label>
+                      <textarea class="form-control" id="medical_allergynote" name="medical_allergynote" rows="4" placeholder="Enter allergy information"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="healthHistory" class="form-label">Health History:</label>
+                      <textarea class="form-control" id="medical_healthhistory" name="medical_healthhistory" rows="4" placeholder="Enter health history"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="referralBy" class="form-label">Referral by:</label>
+                      <input type="text" class="form-control" id="patient_referralby" name="patient_referralby">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="remark" class="form-label">Remark:</label>
+                      <textarea class="form-control" id="remark" name="remark" rows="4"></textarea>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Health Notes Card End -->
+
+            <!-- Next to Kin Card -->
+            <div class="card" id="NexttoKinCard">
+              <div class="card-header d-block p-3" id="NexttoKinHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Next to Kin</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="next2kin_name" class="form-label">Name:</label>
+                      <input type="text" class="form-control" id="next2kin_name" name="next2kin_name">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="next2kin_relationship" class="form-label">Relationship:</label>
+                      <select class="form-select form-control" id="next2kin_relationship" name="next2kin_relationship">
+                        <option value=""></option>
+                        {% for relationship in relationships %}
+                        <option value="{{ relationship.relationship_rno }}">{{ relationship.relationship }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Next to Kin Card End -->
+
+            <!-- Parent Information Card -->
+            <div class="card" id="ParentInformationCard">
+              <div class="card-header d-block p-3" id="ParentInformationHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Parent Information</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="fatherName" class="form-label">Father Name:</label>
+                      <input type="text" class="form-control" id="patient_fathername" name="patient_fathername">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="fatherIC" class="form-label">Father I/C No.:</label>
+                      <input type="text" class="form-control" id="patient_fatheric" name="patient_fatheric">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="motherName" class="form-label">Mother Name:</label>
+                      <input type="text" class="form-control" id="patient_mothername" name="patient_mothername">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_motheric" class="form-label">Mother I/C No.:</label>
+                      <input type="text" class="form-control" id="patient_motheric" name="patient_motheric">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check mb-3">
+                      <input type="checkbox" class="form-check-input" id="medical_G6PD" name="medical_G6PD">
+                      <label for="medical_G6PD" class="form-check-label">G6PD Patient</label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="bloodtype" class="form-label">Blood Type:</label>
+                      <select class="form-select form-control" id="bloodtype" name="bloodtype">
+                        <option value="">-- Select Blood Type --</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Parent Information Card End -->
+
+            <!-- Infant's Card -->
+            <div class="card" id="InfantCard">
+              <div class="card-header d-block p-3" id="InfantHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Infant's</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_birth_length" class="form-label">Birth Lenght:</label>
+                      <input type="text" class="form-control" id="infant_birth_length" name="infant_birth_length" step="0.1">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_birth_weight" class="form-label">Birth Weight:</label>
+                      <input type="text" class="form-control" id="infant_birth_weight" name="infant_birth_weight" step="0.01">
+                    </div>
+                  </div>
+                          
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_birth_hc" class="form-label">Head Circumference:</label>
+                      <input type="text" class="form-control" id="infant_birth_hc" name="infant_birth_hc" step="0.1">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_perinatal" class="form-label">Perinatal Problem:</label>
+                      <input type="text" class="form-control" id="infant_perinatal" name="infant_perinatal" step="0.1">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_tsh" class="form-label">T.S.H:</label>
+                      <input type="text" class="form-control" id="infant_tsh" name="infant_tsh" step="0.1">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_placeofbirth" class="form-label">Place of Birth:</label>
+                      <input type="text" class="form-control" id="infant_placeofbirth" name="infant_placeofbirth" step="0.1">
+                    </div>
+                  </div>
+                          
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="infant_deliverymode" class="form-label">Mode of Delivery:</label>
+                      <select class="form-select form-control" id="infant_deliverymode" name="infant_deliverymode">
+                        <option value=""></option>
+                        
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Infant's Card End -->
+
+            <!-- Family Information Card -->
+            <div class="card" id="FamilyInformationCard">
+              <div class="card-header d-block p-3" id="FamilyInformationHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Family Information</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_spousename" class="form-label">Spouse Name:</label>
+                      <input type="text" class="form-control" id="patient_spousename" name="patient_spousename">
+                    </div>
+                  </div>
+                          
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_spouseoccup" class="form-label">Spouse Occupation:</label>
+                      <input type="text" class="form-control" id="patient_spouseoccup" name="patient_spouseoccup">
+                    </div>
+                  </div>
+                          
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_spouseicno" class="form-label">Spouse I/C No.:</label>
+                      <input type="text" class="form-control" id="patient_spouseicno" name="patient_spouseicno">
+                    </div>
+                  </div>
+                          
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_spousecontact" class="form-label">Spouse Contact:</label>
+                      <input type="text" class="form-control" id="patient_spousecontact" name="patient_spousecontact">
+                    </div>
+                  </div>
+                  
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_yearofmarried" class="form-label">Year of Married:</label>
+                      <input type="text" class="form-control" id="patient_yearofmarried" name="patient_yearofmarried">
+                    </div>
+                  </div>
+                  
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="patient_noofchildren" class="form-label">No. of children:</label>
+                      <input type="text" class="form-control" id="patient_noofchildren" name="patient_noofchildren">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Family Information Card End -->
+
+            <!-- Past Obstetric History Card -->
+            <div class="card" id="PastObstetricHistoryCard">
+              <div class="card-header d-block p-3" id="PastObstetricHistoryHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Past Obstetric History</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_gravida" class="form-label">Gravida:</label>
+                      <input type="text" class="form-control" id="woman_gravida" name="woman_gravida" value="">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_para" class="form-label">Para:</label>
+                      <input type="text" class="form-control" id="woman_para" name="woman_para" value="">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_abortion" class="form-label">Abortion:</label>
+                      <input type="text" class="form-control" id="woman_abortion" name="woman_abortion" value="">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_lifechild" class="form-label">Life Child:</label>
+                      <input type="text" class="form-control" id="woman_lifechild" name="woman_lifechild" value="">
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_dealthchild" class="form-label">Dealth Child:</label>
+                      <input type="text" class="form-control" id="woman_dealthchild" name="woman_dealthchild" value="">
+                    </div>
+                  </div>
+
+                  
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="woman_lastchildbirth" class="form-label">Last Child Birth: <span class="text-danger">*</span></label>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="date-input-wrapper flex-shrink-0" >
+                            <input 
+                              type="text" 
+                              class="form-control" 
+                              id="woman_lastchildbirth" 
+                              name="woman_lastchildbirth" 
+                              placeholder="DD/MM/YYYY"
+                              required
+                              data-provider="flatpickr" data-date-format="Y-m-d"
+                              value="">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Past Obstetric History Card End -->
+
+            <!-- Menstrual Information Card -->
+            <div class="card" id="MenstrualInformationCard">
+              <div class="card-header d-block p-3" id="MenstrualInformationHeader" style="cursor: pointer; transition: background-color 0.3s ease;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 class="card-title mb-1">Menstrual Information</h4>
+                  </div>
+                  <i data-lucide="chevron-down" class="toggleIcon" class="text-muted" style="width: 20px; height: 20px; transition: transform 0.3s ease;"></i>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_menstrualstart" class="form-label">Menstrual Start Age:</label>
+                      <input type="text" class="form-control" id="woman_menstrualstart" name="woman_menstrualstart" >
+                    </div>
+                  </div>
+                  
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_totalmenstrualdays" class="form-label">Total Days:</label>
+                      <input type="text" class="form-control" id="woman_totalmenstrualdays" name="woman_totalmenstrualdays" >
+                    </div>
+                  </div>
+                  
+                  <div class="col-12">
+                    <div class="mb-3">
+                      <label for="woman_menstrualfreqweeks" class="form-label">Frequency (weeks):</label>
+                      <input type="text" class="form-control" id="woman_menstrualfreqweeks" name="woman_menstrualfreqweeks" >
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- Menstrual Information Card End -->
+          </div>
+        </div>
+      </form>
+
+      <!-- Action Buttons -->
+      <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+        <button type="button" class="btn btn-secondary" id="discardButton" onclick="history.back()">
+          <i data-lucide="arrow-left" class="fs-sm me-2"></i> Back
+        </button>
+        <button type="button" class="btn btn-success" id="saveCustomer">
+          <i data-lucide="user-plus" class="fs-sm me-2"></i> Save
+        </button>
+        <div id="loadingSpinner" class="spinner-border text-success d-none" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Messages -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-success text-white">
+        <strong class="me-auto">Success</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body">
+        Customer saved successfully!
+      </div>
+    </div>
+
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-danger text-white">
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body" id="errorMessage">
+        Something went wrong!
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Unlock Modal -->
+<div class="modal fade" id="unlockModal" tabindex="-1" aria-labelledby="unlockModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white py-2 px-3">
+        <h5 class="modal-title" id="unlockModalLabel">Security Code</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="password" id="unlockPassword" class="form-control" placeholder="Please input security code to unlock the fields">
+      </div>
+      <div class="modal-footer" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" id="unlockConfirmBtn" class="btn btn-primary">OK</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% include "partials/security_code_modal.html" %}
+{% include "partials/customer/panelcompany_dialog.html" %}
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<!-- Flatpickr JavaScript -->
+ <script src="{% static 'js/pages/form-choice.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<!-- Dropzone File Upload js -->
+
+<script src="{% static 'js/pages/panelcompany.js' %}"></script>
+<script src="{% static 'plugins/dropzone/dropzone-min.js' %}"></script>
+<script src="{% static 'js/pages/view_customers_details.js' %}"></script>
+<script src="{% static 'js/pages/new_customer.js' %}"></script>
+
+{% endblock extra_javascript %}

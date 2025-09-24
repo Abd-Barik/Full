@@ -1,0 +1,22 @@
+{% if results %}
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Customer No</th>
+        <th>Name</th>
+        <th>Branch Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in results %}
+        <tr>
+          <td>{{ row.customerno }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.branchname }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No results found.</p>
+{% endif %}

@@ -1,0 +1,139 @@
+{% extends 'layouts/vertical.html' %}
+{% block title %}Stock Item Master{% endblock title %}
+
+{% block page_content %}
+{% load static i18n %}
+
+{% block extra_css %}
+
+<link href="{% static 'plugins/datatables/responsive.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock extra_css %}
+<div class="container-fluid">
+   {% include 'partials/page-title.html' with title='Stock Item Master' %}
+<div class="col-12 ">
+  <div class="card">
+    <div class="card-header">
+      <form id="filterform">
+        {% csrf_token %}
+        <div class="row g-3">
+
+          <div class="col-md-2">
+            <label class="form-label">Item No:</label>
+            <input type="text" id="" name="itemno" class="form-control">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Item Name:</label>
+            <input type="text" id="" name="itemname" class="form-control">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Alter. Item No:</label>
+            <input type="text" id="" name="alternateitemno" class="form-control">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">with Serial No.:</label>
+            <input type="text" id="" name="" class="form-control">
+          </div>
+
+          <!-- Submit 按钮 -->
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search me-2"></i>Submit
+            </button>
+          </div>
+
+          <!-- Add New 按钮 -->
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button type="button" class="btn btn-primary w-100" id="addNewBtn">
+              <i class="fas fa-plus me-1"></i>Add New
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="row g-0">
+        <div class="col-12">
+          <div class="px-4 py-3 border-end border-dashed">
+            <div class=" border p-3 rounded">
+              
+              <div class="table-responsive" style="height: 400px; overflow-x: auto; overflow-y: auto;">
+                <table id="stock_item_master_table" class="table table-striped dt-responsive align-middle mb-0" style="min-width: 2500px;" >
+                  <thead class=" fs-xs">
+                    <tr>
+                      <th data-field="index">No.</th>
+                      <th data-field="action">Action</th>
+                      <th data-field="itemno">Item No</th>
+                      <th data-field="itemname">Item Name</th>
+                      <th data-field="referenceno">Reference No.</th>
+                      <th data-field="branch">Branch/Department</th>
+                      <th data-field="Alternateitemno">Alternate Item No.</th>
+                      <th data-field="active">Active</th>
+                      <th data-field="billgroup">Billing Group</th>
+                      <th data-field="uom">Sales UoM</th>
+                      <th data-field="price">Sales Price</th>
+                      <th data-field="labelprint">Label Print</th>
+                      <th data-field="controldrug">Control Drug</th>
+                      <th data-field="taxableiterm">Taxable Item</th>
+                      <th data-field="taxrate">Tax Rate</th>
+                      <th data-field="s/n">Item with S/N</th>
+                      <th data-field="createdby">Created by</th>
+                      <th data-field="createdon">Created on</th>
+                      <th data-field="modifiedby">Modified by</th>
+                      <th data-field="modifiedon">Modified on</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stock_item_master_table_body">
+         
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+            <div class="pagination-container" id="pagination-container">
+                <!-- 分页内容将通过JavaScript动态生成 -->
+              </div>
+          </div> <!-- end .px-4-->
+        </div> <!-- end col-->
+      </div> <!-- end row-->
+    </div> <!-- end card-body-->
+  </div> <!-- end card-->
+</div> <!-- end col-->
+
+<!-- Save successful table -->
+<div class="modal fade" id="save-table" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myCenterModalLabel">Information</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h5 class="mt-0" style="font-size: large; text-align:center;">Save Successful</h5>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% include "pages/itemmaster/stock_item_master_delete_modal.html" %}
+{% endblock page_content %}
+{% block extra_javascript %}
+
+<!-- Datatables js -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/responsive.bootstrap5.min.js' %}"></script>
+<!-- Page js -->
+<script src="{% static 'js/pages/itemmaster/stock_item_master.js' %}"></script>
+
+
+
+{% endblock extra_javascript %}

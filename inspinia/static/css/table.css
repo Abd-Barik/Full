@@ -1,0 +1,429 @@
+  .choices__list--dropdown, 
+.choices__list[aria-expanded] {
+    z-index: 9999 !important;
+}
+
+/* 表格容器優化 - 限制到 .appointments-table-container */
+.appointments-table-container {
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* 減少左右內邊距 - 限制到 appointments-section */
+.appointments-section .px-4 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* 表格基礎樣式 - 限制到 .appointments-table-container 內的表格 */
+.appointments-table-container #horizontal-scroll {
+  table-layout: auto;
+  margin-bottom: 0;
+  width: auto;
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+/* 表格頭部樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 表格行樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll tbody tr:hover {
+  background-color: rgba(0,123,255,0.05);
+}
+
+/* 第一欄 (No.) 固定樣式 */
+#horizontal-scroll th:nth-child(1),
+#horizontal-scroll td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 12; /* 比其他固定欄位更高 */
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+/* 第二欄 (Action) 固定樣式 */
+#horizontal-scroll th:nth-child(2),
+#horizontal-scroll td:nth-child(2) {
+  position: sticky;
+  left: var(--col1-width, 60px);
+  top: 0;
+  z-index: 11;
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* 第三欄 (Name) 固定樣式 */
+#horizontal-scroll th:nth-child(3),
+#horizontal-scroll td:nth-child(3) {
+  position: sticky;
+  left: var(--col1-2-width, 200px);
+  top: 0;
+  z-index: 11;
+  background-color: #fff;
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* 三個固定欄位的表頭特殊樣式 */
+.sticky-columns-initialized #horizontal-scroll thead th:nth-child(1),
+.sticky-columns-initialized #horizontal-scroll thead th:nth-child(2),
+.sticky-columns-initialized #horizontal-scroll thead th:nth-child(3) {
+  background-color: #e9ecef;
+  z-index: 15;
+}
+
+.appointments-table-container #horizontal-scroll thead th:nth-child(1) {
+  cursor: default !important; /* 覆蓋任何拖拽樣式 */
+  user-select: none;
+}
+
+.appointments-table-container #horizontal-scroll thead th:nth-child(1):hover {
+  background-color: #e9ecef !important; /* 保持原始背景色 */
+}
+
+/* 固定列的表頭特殊樣式 - 限制到 .appointments-table-container */
+.sticky-columns-initialized .appointments-table-container #horizontal-scroll thead th:nth-child(2),
+.sticky-columns-initialized .appointments-table-container #horizontal-scroll thead th:nth-child(3) {
+  background-color: #e9ecef;
+  z-index: 15;
+}
+
+/* 其他欄位的樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)),
+.appointments-table-container #horizontal-scroll td:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)) {
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* 確保第一欄不會顯示拖拽相關的視覺效果 */
+.appointments-table-container #horizontal-scroll thead th:nth-child(1)[draggable] {
+  cursor: default !important;
+}
+
+/* 拖拽時的視覺反饋 - 排除第一欄 */
+.appointments-table-container #horizontal-scroll thead th.drag-over:not(:nth-child(1)) {
+  border-left: 2px solid #007bff;
+}
+
+/* 確保第一欄在拖拽時不會有邊框效果 */
+.appointments-table-container #horizontal-scroll thead th:nth-child(1).drag-over {
+  border-left: none !important;
+}
+
+/* Hide and Show 下拉選單樣式 */
+.appointments-table-container .hide-show-dropdown {
+  font-family: inherit;
+  font-size: 14px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  position: absolute;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item:hover:not([style*="not-allowed"]) {
+  background-color: #f8f9fa;
+}
+
+.appointments-table-container .hide-show-dropdown .dropdown-item[style*="not-allowed"] {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.appointments-table-container .hide-show-dropdown label {
+  margin: 0;
+  font-weight: normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.appointments-table-container .hide-show-dropdown label[style*="not-allowed"] {
+  cursor: not-allowed;
+}
+
+.appointments-table-container .hide-show-dropdown input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.1);
+}
+
+.appointments-table-container .hide-show-dropdown input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+/* 下拉選單標題樣式 */
+.appointments-table-container .hide-show-dropdown .dropdown-header {
+  padding: 8px 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  color: #666;
+  background-color: #f8f9fa;
+}
+
+/* 自定義滾動條樣式 */
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.appointments-table-container .hide-show-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Hide and Show 按鈕樣式優化 */
+.appointments-table-container #HideAndShowBtn {
+  position: relative;
+}
+
+.appointments-table-container #HideAndShowBtn:after {
+  content: " ▼";
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.appointments-table-container .column-hidden-indicator {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+/* 所有cell的基本樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll th,
+.appointments-table-container #horizontal-scroll td {
+  white-space: nowrap;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+/* 動作按鈕樣式優化 - 限制到 .appointments-table-container */
+.appointments-table-container .action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.appointments-table-container .action-buttons .btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.appointments-table-container .action-buttons .btn i {
+  font-size: 12px;
+}
+
+/* 徽章樣式優化 - 限制到 .appointments-table-container */
+.appointments-table-container .badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.appointments-table-container .bg-pink {
+  background-color: #e83e8c !important;
+}
+
+/* 貨幣對齊 - 限制到 .appointments-table-container */
+.appointments-table-container .text-end {
+  text-align: right !important;
+}
+
+/* 文字內容樣式 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll td[title] {
+  cursor: help;
+}
+
+/* 響應式調整 - 限制到 appointments-section */
+@media (max-width: 768px) {
+  .appointments-section .px-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .appointments-table-container .action-buttons .btn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  
+  .appointments-table-container .action-buttons .btn i {
+    font-size: 10px;
+  }
+  
+  .appointments-table-container #horizontal-scroll th,
+  .appointments-table-container #horizontal-scroll td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .appointments-table-container .hide-show-dropdown {
+    min-width: 180px;
+    max-height: 250px;
+    font-size: 13px;
+  }
+  
+  .appointments-table-container .hide-show-dropdown .dropdown-item {
+    padding: 6px 10px;
+  }
+  
+  .appointments-table-container .table-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+/* 載入狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .loading-row {
+  background-color: #f8f9fa;
+}
+
+.appointments-table-container .loading-row td {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* 錯誤狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .error-row {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* 空數據狀態樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .no-data-row {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* 分頁樣式優化 - 限制到 .appointments-section */
+.appointments-section .pagination .page-link {
+  padding: 6px 12px;
+  margin: 0 2px;
+}
+
+.appointments-section .pagination .page-item.active .page-link {
+  background-color: #007bff;
+}
+
+/* 確保滾動條樣式 - 限制到 .appointments-table-container */
+.appointments-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.appointments-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.appointments-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+}
+
+.appointments-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 表頭拖拽效果 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th[draggable="true"] {
+  cursor: move;
+  user-select: none;
+}
+
+.appointments-table-container #horizontal-scroll thead th[draggable="true"]:hover {
+  background-color: #e9ecef;
+}
+
+/* 拖拽時的視覺反饋 - 限制到 .appointments-table-container */
+.appointments-table-container #horizontal-scroll thead th.drag-over {
+  border-left: 2px solid #007bff;
+}
+
+/* 表格控制按鈕樣式 - 限制到 .appointments-table-container */
+.appointments-table-container .table-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.appointments-table-container .table-controls .btn {
+  font-size: 12px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 滾動陰影效果 - 限制到 .appointments-table-container */
+.appointments-table-container.has-left-shadow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.appointments-table-container.has-right-shadow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 状态下拉框样式 - 限制到 .appointments-section */
+.appointments-section .dropdown-item.selected {
+  background-color: #f8f9fa;
+}
+
+.appointments-section .dropdown-item:hover {
+  background-color: #e9ecef;
+}
+
+.appointments-section .dropdown-item .form-check-input {
+  margin-right: 8px;
+}

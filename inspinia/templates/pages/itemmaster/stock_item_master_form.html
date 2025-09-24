@@ -1,0 +1,656 @@
+{% extends 'layouts/vertical.html' %}
+{% block title %}Stock Item Master{% endblock title %}
+
+{% block page_content %}
+{% load static i18n %}
+
+{% block extra_css %}
+<link href="{% static 'plugins/datatables/responsive.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock extra_css %}
+
+<div class="container-fluid">
+{% include 'partials/page-title.html' with title='Stock Item Master' %}
+
+
+        <form id="medicationForm">
+            {% csrf_token %}
+            <div class="row g-2">
+                <!-- Left Column -->
+                <div class="col-xxl-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Medication Inventory Management</h4>
+                        </div>
+                        <div class="card-body">
+                        
+                            <!-- Item Information -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Item No.:</label>
+                                    <input type="text" class="form-control" name="itemno" >
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Dose:</label>
+                                    <input type="text" class="form-control" name="dose">
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="noexpirydateitem" id="noExpired">
+                                        <label class="form-check-label" for="noExpired">No Expired Item</label>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Alter. Item No.:</label>
+                                    <input type="text" class="form-control" name="alternateitemno">
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Time per day:</label>
+                                    <input type="text" class="form-control" name="timeperday">
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="istaxable" id="sstTaxable">
+                                        <label class="form-check-label" for="sstTaxable">SST Taxable Item</label>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Item Name:</label>
+                                    <input type="text" class="form-control" name="itemname" required>
+                                </div>
+                                
+                                <div class="col-3">
+                                    <label class="form-label">Frequency:</label>
+                                    <select class="form-select" name="frequency" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for frequency in frequencies %}
+                                        <option value="{{ frequency.fre_rno }}">
+                                            {{ frequency.frequency }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="isactive" id="active" checked>
+                                        <label class="form-check-label" for="active">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-3">
+                                    <label class="form-label">Barcode:</label>
+                                    <input type="text" class="form-control" name="barcode">
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Shelf:</label>
+                                    <input type="text" class="form-control" name="shelf">
+                                </div>
+                                
+                                <div class="col-3">
+                                    <label class="form-label">Precaution:</label>
+                                    <select class="form-select" name="precaution" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for precaution in precautions %}
+                                        <option value="{{ precaution.pre_rno }}">
+                                            {{ precaution.precaution }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="labelprint" id="labelPrint" checked>
+                                        <label class="form-check-label" for="labelPrint">Label Print</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Item Type:</label>
+                                    <select class="form-select" name="itemtype" data-choices data-choices-search-true>
+                                        {% for type in types %}
+                                        <option value="{{ type.itemtype_rno }}">
+                                            {{ type.itemtype }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                            
+                                <div class="col-3">
+                                    <label class="form-label">Indication:</label>
+                                    <select class="form-select" name="indication" data-choices data-choices-search-true>
+                                        {% for indication in indications %}
+                                        <option value="{{ indication.indicate_rno }}">
+                                            {{ indication.indication }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="isvaccine" id="vaccineItem">
+                                        <label class="form-check-label" for="vaccineItem">Vaccine Item</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Item Group:</label>
+                                    <select class="form-select" name="itemgroup" data-choices data-choices-search-true>
+                                        {% for group in groups %}
+                                        <option value="{{ group.itemgrp_rno }}">
+                                            {{ group.itemgroup }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                            
+                                <div class="col-3">
+                                    <label class="form-label">Dosage:</label>
+                                    <select class="form-select" name="dosage" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for dosage in dosages %}
+                                        <option value="{{ dosage.dosage_rno }}">
+                                            {{ dosage.dosage }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="iscontroldrug" id="controlDrug">
+                                        <label class="form-check-label" for="controlDrug">Control Drug</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Category:</label>
+                                    <select class="form-select" name="category_rno" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.itemcategory_rno }}">
+                                            {{ category.category }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                
+                                <div class="col-3">
+                                    <label class="form-label">Instruction:</label>
+                                    <select class="form-select" name="instruction" data-choices data-choices-search-true>
+                                        {% for instruction in instructions %}
+                                        <option value="{{ instruction.instruct_rno }}">
+                                            {{ instruction.instruction }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="itemwithserial" id="serialNo">
+                                        <label class="form-check-label" for="serialNo">Item with serial no.</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Billing Group:</label>
+                                    <select class="form-select" name="billgrp_rno" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for billgroup in billgroups %}
+                                        <option value="{{ billgroup.billgrp_rno }}">
+                                            {{ billgroup.billgrp_description }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Classification:</label>
+                                    <select class="form-select" name="classificationcode" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for classification in classifications %}
+                                        <option value="{{ classification.code }}">
+                                            {{ classification.description }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="col-xxl-4 ">
+                    <div class="card" >
+                        <div class="card-header ">
+                            <h6 class="card-title">Opening Quantity by Branch</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label">Opening Date:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="openingdate" data-provider="flatpickr" value="">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Expiry Date:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="defaultexpiredate" data-provider="flatpickr" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Opening Quantity:</label>
+                                    <input type="text" class="form-control" name="openingqty">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Unit Cost:</label>
+                                    <input type="text" class="form-control" name="unitcost">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border mt-3">
+                        <div class="card-header ">
+                            <h6 class="card-title">Supplier</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label">Supplier 1:</label>
+                                <select class="form-select" name="supplier1_rno" data-choices data-choices-search-true>
+                                    <option>Select a Supplier</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{ supplier.supplier_rno }}">
+                                        {{ supplier.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label">Supplier 2:</label>
+                                <select class="form-select" name="supplier2_rno" data-choices data-choices-search-true>
+                                    <option>Select a Supplier</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{ supplier.supplier_rno }}">
+                                        {{ supplier.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label">Supplier 3:</label>
+                                <select class="form-select" name="supplier3_rno" data-choices data-choices-search-true>
+                                    <option>Select a Supplier</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{ supplier.supplier_rno }}">
+                                        {{ supplier.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border">
+            <div class="card-header">
+                <h6 class="mb-0">Measurement</h6>
+            </div>
+            <div class="card-body">
+                
+                <!-- Base UoM Section -->
+                <div class="measurement-section">
+                    
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label">Base UoM:</label>
+                                <select class="form-select" name="unit" id="baseuom" data-choices data-choices-search-true>
+                                    <option></option>
+                                    {% for uom in itemuom %}
+                                    <option value="{{ uom.unit }}">{{ uom.unit }}</option>
+                                    {% endfor %}     
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Factor:</label>
+                                <input type="text" class="form-control" name="factor" value="1" readonly>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Normal:</label>
+                                <input type="text" class="form-control" name="unitsellprice">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales UoM Section -->
+                    <div class="measurement-section">
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-md-2">
+                                <label class="form-label">Sales UoM:</label>
+                                <select class="form-select" name="salesunit" data-choices data-choices-search-true>
+                                    <option></option>
+                                     {% for uom in itemuom %}
+                                    <option value="{{ uom.unit }}">{{ uom.unit }}</option>
+                                    {% endfor %} 
+                                    <!-- 示例选项 -->
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Factor:</label>
+                                <input type="text" class="form-control" name="salesfactor">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Normal:</label>
+                                <input type="text" class="form-control" name="salesprice">
+                            </div>
+                                
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 1:</label>
+                                <input type="text" class="form-control" name="salesprice2">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 2:</label>
+                                <input type="text" class="form-control" name="salesprice3">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 3:</label>
+                                <input type="text" class="form-control" name="salesprice4">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 4:</label>
+                                <input type="text" class="form-control" name="salesprice5">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Buy Med:</label>
+                                <input type="text" class="form-control" name="salesprice6">
+                            </div> 
+                            <div class="col-auto">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="istaxinclusive" id="priceInclusiveTax">
+                                    <label class="form-check-label" for="priceInclusiveTax">
+                                        Price Inclusive Tax
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Non-Citizen Prices -->
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-md-1"></div>
+                            <div class="col-md-2">
+                                <label class="form-label text-end">Price for Non-Citizen →</label>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Normal:</label>
+                                <input type="text" class="form-control" name="x_salesprice">
+                            </div>
+                                
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 1:</label>
+                                <input type="text" class="form-control" name="x_salesprice2">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 2:</label>
+                                <input type="text" class="form-control" name="x_salesprice3">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 3:</label>
+                                <input type="text" class="form-control" name="x_salesprice4">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Price 4:</label>
+                                <input type="text" class="form-control" name="x_salesprice5">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label price-label">Buy Med:</label>
+                                <input type="text" class="form-control" name="x_salesprice6">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label mb-0">Tax Code:</label>
+                                <select class="form-select" name="taxcode" >
+                                    <option>Select Tax</option>
+                                     {% for tax in taxes %}
+                                    <option value="{{tax.svrtaxcode}}">{{tax.svrtaxcode}} -{{tax.description}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uomModal">...</button>
+                            </div>  
+                        </div>
+                    </div>
+
+                    <!-- Purchase UoM Section -->
+                    <div class="measurement-section">
+                        <div class="section-label"></div>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label">Purchase UoM:</label>
+                                <select class="form-select" name="purchaseunit" data-choices data-choices-search-true>
+                                    <option></option>
+                                     {% for uom in itemuom %}
+                                    <option value="{{ uom.unit }}">{{ uom.unit }}</option>
+                                    {% endfor %} 
+                                   
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Factor:</label>
+                                <input type="text" class="form-control" name="purchasefactor">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">Normal:</label>
+                                <input type="text" class="form-control" name="purchaseprice">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- Stock Level Control -->
+            <div class="card border mt-3">
+                <div class="card-header ">
+                    <h6 class="mb-0">Stock Level Control</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Maximum:</label>
+                            <input type="text" class="form-control" name="maximum">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Minimum:</label>
+                            <input type="text" class="form-control" name="minimum">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Re-order Level:</label>
+                            <input type="text" class="form-control" name="reorder">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    
+<!-- Action Buttons -->
+    <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                <i data-lucide="arrow-left" class="fs-sm me-2"></i> Back
+            </button>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i>Save
+        </button>
+    </div>
+</div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="uomModal" tabindex="-1" aria-labelledby="uomModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uomModalLabel">
+                        <i class="fas fa-calculator"></i> Multi UoM and Selling Price
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- UoM Table Section -->
+                    <div class="table-container mb-4">
+                        <table id="uomTable" class="table table-striped table-hover table-sm">
+                            <thead >
+                                <tr>
+                                    <th>UoM</th>
+                                    <th>Factor</th>
+                                    <th>Normal Selling Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated by DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Form Section -->
+                    <div class="form-section">
+                        <div class="row">
+                            
+                            <div class="col-md-5">
+                                <label class="form-label"><strong>UoM:</strong></label>
+                                <select class="form-select" name="unit" id="modalunit" data-choices data-choices-search-true>
+                                    <option></option>
+                                    {% for uom in itemuom %}
+                                    <option value="{{ uom.unit }}">{{ uom.unit }}</option>
+                                    {% endfor %}     
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label class="form-label"><strong>Sales Factor:</strong></label>
+                                <input type="text" class="form-control form-control-sm" id="factor"   >
+                            </div>
+                            <div class="col-md-2" id="modalbaseuom">
+                                <label class="form-label">&nbsp;</label> <!-- 空label占位，保证对齐 -->
+                                <span id="baseuom_text" class="form-control-plaintext"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Section -->
+                    <div class="price-section">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Normal </strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="normalPrice" name="refprice"  step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Price 1</strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="price1" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Price 2</strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="price2" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Price 3</strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="price3" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Price 4</strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="price4" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><strong>Buy Med</strong></label>
+                                <input type="number" class="form-control form-control-sm price-input" id="buyMed" step="0.01" >
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label class="form-label"><strong>Price for Non-Citizen</strong></label>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenPrice1" step="0.01" >
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenPrice2" step="0.01">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenPrice3" step="0.01">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenPrice4" step="0.01">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenBuyMed" step="0.01" >
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm price-input" id="nonCitizenBuyMed" step="0.01" >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer d-flex justify-content-between">
+                    <!-- 左边按钮组 -->
+                    <div class="d-flex gap-2">
+                        <button type="button" id="uomnew" class="btn btn-success">New</button>
+                        <button type="button" id="uomdelete" class="btn btn-danger">Delete</button>
+                        
+                        <button type="button" id="uomsave" class="btn btn-primary">Save</button>
+                    </div>
+
+                    <!-- 右边按钮（Close） -->
+                    <div>
+                        <button type="button" class="btn btn-info" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% include "partials/customer/toast_message.html" %}
+
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<script src="{% static 'js/pages/form-choice.js' %}"></script>
+<script src="{% static 'js/pages/itemmaster/stock_item_master_viewedit.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/fixedHeader.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.fixedHeader.min.js' %}"></script>
+<script src="{% static 'js/pages/itemmaster/multi_uom.js' %}"></script>
+
+{% endblock extra_javascript %}
+

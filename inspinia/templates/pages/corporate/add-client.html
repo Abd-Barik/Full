@@ -1,0 +1,528 @@
+{% extends 'layouts/vertical.html' %}
+
+{% load static i18n %}
+
+{% block title %}{% endblock title %}
+
+{% block extra_css %}
+<!-- 自定義樣式 -->
+<style>
+.form-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-get-tin {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.btn-validate {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.invoice-options {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.rounding-example {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.rounding-table {
+    font-size: 0.8rem;
+}
+
+.rounding-table td {
+    padding: 2px 8px;
+    border: 1px solid #dee2e6;
+}
+
+.btn-group-custom {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checkbox-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+</style>
+{% endblock extra_css %}
+
+{% block page_content %}
+<div class="container-fluid">
+    {% include 'partials/page-title.html' with title='Panel Company' subtitle='Corporate Management' %}
+    
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <form id="corporateForm">
+                {% csrf_token %}
+                
+                <!-- 基本資訊區塊 -->
+                <div class="form-section">
+                    <div class="row">
+                        <!-- 左側欄位 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Date:</label>
+                                <input type="date" class="form-control" name="opendate" id="opendate">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Corp. A/C:</label><span class="text-danger">*</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control" name="pcompany_no" id="pcompany_no">
+                                    <div class="checkbox-custom">
+                                        <input type="checkbox" id="isactive" name="isactive" checked>
+                                        <label for="active">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Name:</label><span class="text-danger">*</span>
+                                <input type="text" class="form-control" name="pcompanyname" id="pcompanyname">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Address:</label><span class="text-danger">*</span>
+                                <input type="text" class="form-control" name="address1" id="address1">
+                                <input type="text" class="form-control mt-1" name="address2" id="address2">
+                                <input type="text" class="form-control mt-1" name="address3" id="address3">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Post Code:</label><span class="text-danger">*</span>
+                                        <input type="text" class="form-control" name="postcode" id="postcode">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Town:</label><span class="text-danger">*</span>
+                                        <input type="text" class="form-control" name="town" id="town">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">State:</label><span class="text-danger">*</span>
+                                        <select class="form-select" name="statecode" id="statecode" >
+                                            <option value="" hidden></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Country:</label><span class="text-danger">*</span>
+                                        <select class="form-select" name="country" id="country">
+                                            <option value="Malaysia" hidden>Malaysia</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Contact Person:</label>
+                                <input type="text" class="form-control" name="contactperson">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Contact No.:</label><span class="text-danger">*</span>
+                                        <input type="text" class="form-control" name="contact_no" id="contact_no">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">E-mail:</label><span class="text-danger">*</span>
+                                        <input type="email" class="form-control" name="email" id="email">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">MSIC Code:</label><span class="text-danger">*</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control" name="msic_code" id="msic_code">
+                                    <small class="text-muted">( Malaysia Standard Industrial Classification Code  )</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Remark:</label>
+                                <textarea class="form-control" name="remark" id="remark" rows="8"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 右側欄位 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Corp. Type:</label>
+                                <select class="form-select" name="corp_type" id="corp_type">
+                                    <option value="" hidden></option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Ceiling charge per visit:</label>
+                                <input type="number" class="form-control" name="ceiling_charge" id="ceiling_charge" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Monthly Ceiling charge:</label>
+                                <input type="number" class="form-control" name="monthly_ceiling" id="monthly_ceiling" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Default Consultation:</label>
+                                <input type="number" class="form-control" name="default_consultation" id="default_consultation" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Price Book:</label>
+                                <select class="form-select" name="price_book" id="price_book">
+                                    <option value="" hidden></option>
+                                    <option value="book2">book2</option>
+                                    <option value="pricebook1">pricebook1</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Stock Item Price Scheme:</label>
+                                <select class="form-select" name="stock_price_scheme" id="stock_price_scheme">
+                                    <option value="" hidden></option>
+                                    <option value="NORMAL">NORMAL</option>
+                                    <option value="PRICE!">PRICE 1</option>
+                                    <option value="PRICE2">PRICE 2</option>
+                                    <option value="PRICE3">PRICE 3</option>
+                                    <option value="PRICE4">PRICE 4</option>
+                                    <option value="BUYMED">BUY MED</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Service Item Price Scheme:</label>
+                                <select class="form-select" name="service_price_scheme" id="service_price_scheme">
+                                    <option value="" hidden></option>
+                                    <option value="NORMAL">NORMAL</option>
+                                    <option value="PRICE!">PRICE 1</option>
+                                    <option value="PRICE2">PRICE 2</option>
+                                    <option value="PRICE3">PRICE 3</option>
+                                    <option value="PRICE4">PRICE 4</option>
+                                    <option value="BUYMED">BUY MED</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Item Markup Rate (%):</label>
+                                <input type="number" class="form-control" name="markup_rate" id="markup_rate" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Rounding Formula:</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control highlight-yellow" name="rounding_formula" id="rounding_formula" style="width: 200px;">
+                                    <span class="fw-bold">Example：</span>
+                                </div>
+                                
+                                <div class="rounding-example mt-2">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="checkbox-custom">
+                                            <input type="checkbox" id="rounding_by_item" name="rounding_by_item">
+                                            <label for="rounding_by_item">Rounding by Item</label>
+                                        </div>
+                                        <div class="checkbox-custom">
+                                            <input type="checkbox" id="rounding_by_billing" name="rounding_by_billing">
+                                            <label for="rounding_by_billing">Rounding by Billing Group</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <table class="rounding-table mt-2">
+                                        <tr>
+                                            <td><strong>Amount</strong></td>
+                                            <td><strong>Rounding</strong></td>
+                                            <td><strong>Result</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>1.235</td>
+                                            <td>-2</td>
+                                            <td>1.24</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1.234</td>
+                                            <td>-2</td>
+                                            <td>1.23</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1.2</td>
+                                            <td>-100</td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1.9</td>
+                                            <td>-100</td>
+                                            <td>2</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 稅務資訊區塊 -->
+                <div class="form-section">
+                    <div class="section-title">Tax Information</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">BRN:</label><span class="text-danger">*</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control" name="brn" id="brn">
+                                    <small class="text-muted">( Businesss Registration No.  )</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">TIN:</label><span class="text-danger">*</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control" name="tin" id="tin">
+                                    <div class="checkbox-custom">
+                                        <input type="checkbox" id="no_einvoice" name="no_einvoice">
+                                        <label for="no_einvoice" class="text-danger">No E-Invoice submission required</label>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    EI00000000020 – Foreign Buyer’s TIN<br>
+                                    EI00000000040 - Government or Government Authorities
+                                </small>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-9">
+                                    <div class="mb-3">
+                                        <label class="form-label">SST No.:</label>
+                                        <input type="text" class="form-control" name="sst_no" id="sst_no">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="checkbox-custom mt-4">
+                                        <input type="checkbox" id="sst_exempted" name="sst_exempted">
+                                        <label for="sst_exempted">SST Exempted</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Grp Company Name:</label>
+                                <select class="form-select" name="group_company" id="group_company">
+                                    <option value="" hidden></option>
+                                    <option value="1">alam dingin</option>
+                                    <option value="2">ASIA ASSISTENCE</option>
+                                    <option value="3">AYU SERI</option>
+                                    <option value="4">FOMEMA SDN BHD-D11F000003</option>
+                                    <option value="5">KLINIC FAIZAL DAN RAKAN-RAKAN SDN BHD</option>
+                                    <option value="6">PM CARE</option>
+                                    <option value="7">RED ALERT</option>
+                                    <option value="8">SESB</option>
+                                    <option value="9">VIBRANT GROUP BHD</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label" style="color: #0066cc;">Portal Corp. Mapping:</label>
+                                <select class="form-select" name="portal_mapping" id="portal_mapping">
+                                    <option value="" hidden></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-title">Company Invoice Option</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Option 1:</label>
+                                <select class="form-select" name="invoiceoption1" id="invoiceoption1">
+                                    <option value="Daily">Daily</option>
+                                    <option value="Monthly" selected>Monthly</option>
+                                    <option value="Twice Monthly">Twice Monthly</option>
+                                    <option value="Weekly">Weekly</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Option 2:</label>
+                                <select class="form-select" name="invoiceoption2" id="invoiceoption2">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                    <option value="24">24</option>
+                                    <option value="25">25</option>
+                                    <option value="26">26</option>
+                                    <option value="27">27</option>
+                                    <option value="28">28</option>
+                                    <option value="29">29</option>
+                                    <option value="30">30</option>
+                                    <option value="End of Month" selected>End of Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Option 3:</label>
+                                <select class="form-select" name="option3" id="option3">
+                                    <option value="" hidden></option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                    <option value="24">24</option>
+                                    <option value="25">25</option>
+                                    <option value="26">26</option>
+                                    <option value="27">27</option>
+                                    <option value="28">28</option>
+                                    <option value="29">29</option>
+                                    <option value="30">30</option>
+                                    <option value="End of Month">End of Month</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Option 4:</label>
+                                <select class="form-select" name="option4" id="option4">
+                                    <option value="" hidden></option>
+                                    <option value="sun">Sunday</option>
+                                    <option value="mon">Monday</option>
+                                    <option value="tue">Tuesday</option>
+                                    <option value="wed">Wednesday</option>
+                                    <option value="thu">Thursday</option>
+                                    <option value="fri">Friday</option>
+                                    <option value="sat">Saturday</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- Action Buttons -->
+            <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+                <button type="button" class="btn btn-secondary" id="discardButton" onclick="history.back()">
+                <i data-lucide="arrow-left" class="fs-sm me-2"></i> Back
+                </button>
+                <button type="button" class="btn btn-success" id="saveCustomer">
+                <i data-lucide="user-plus" class="fs-sm me-2"></i> Save
+                </button>
+                <div id="loadingSpinner" class="spinner-border text-success d-none" role="status">
+                <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<!-- Flatpickr JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<script src="{% static 'js/pages/new-cor-client.js' %}"></script>
+{% endblock extra_javascript %}

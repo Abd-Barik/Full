@@ -1,0 +1,109 @@
+<!-- Invalid Security Code Modal -->
+<div class="modal fade" id="passworderror" tabindex="-1" aria-labelledby="passworderrorLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 220px;">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white py-2 px-3">
+        <h6 class="modal-title mb-0" id="passworderrorLabel">Information</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex align-items-center">
+        <i class="bi bi-info-circle-fill fs-1 text-secondary me-3"></i>
+        <span class="fw-bold text-primary">Invalid Security Code</span>
+      </div>
+      <div class="modal-footer justify-content-center" style="background-color: #e6f2ff; padding: 6px 8px;">
+        <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initializeCustomerNoLock() {
+        // 獲取所有需要鎖定的輸入框和對應的鎖定圖標
+        const lockedInputs = document.querySelectorAll('input[data-locked="true"], #customerno, #name, #icno');
+        const lockIcons = document.querySelectorAll('[id^="lockicon"]');
+        const unlockModal = new bootstrap.Modal(document.getElementById('unlockModal'));
+        const passworderror = new bootstrap.Modal(document.getElementById('passworderror'));
+        const unlockPassword = document.getElementById('unlockPassword');
+        const unlockConfirmBtn = document.getElementById('unlockConfirmBtn');
+
+        let isLocked = true;
+
+        // 初始化所有字段為只讀狀態
+        function lockAllFields() {
+            lockedInputs.forEach(input => {
+                input.setAttribute('readonly', true);
+            });
+            
+            lockIcons.forEach(iconWrapper => {
+                const icon = iconWrapper.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-success', 'ti-lock-open');
+                    icon.classList.add('ti-lock', 'text-dark');
+                }
+                iconWrapper.style.cursor = "pointer";
+            });
+            
+            isLocked = true;
+        }
+
+        // 解鎖所有字段
+        function unlockAllFields() {
+            lockedInputs.forEach(input => {
+                input.removeAttribute('readonly');
+            });
+            
+            lockIcons.forEach(iconWrapper => {
+                const icon = iconWrapper.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('ti-lock');
+                    icon.classList.add('ti-lock-open', 'text-dark');
+                }
+            });
+            
+            isLocked = false;
+        }
+
+        // 初始設置為鎖定狀態
+        lockAllFields();
+
+        // 為所有鎖定圖標添加點擊事件
+        lockIcons.forEach(iconWrapper => {
+            iconWrapper.addEventListener('click', () => {
+                if (isLocked) {
+                    // 彈出解鎖對話框
+                    unlockPassword.value = "";
+                    unlockModal.show();
+                } else {
+                    // 重新鎖定所有字段
+                    lockAllFields();
+                }
+            });
+        });
+
+        // 確認解鎖按鈕事件
+        unlockConfirmBtn.addEventListener('click', () => {
+            const password = unlockPassword.value;
+            if (password === "1234") {  // TODO: 改成呼叫後端 API 驗證
+                unlockAllFields();
+                unlockModal.hide();
+                
+                // 顯示成功提示
+                if (typeof showToast === 'function') {
+                    // 假設你有成功提示的 toast
+                    showToast('unlockSuccessToast');
+                }
+            } else {
+                passworderror.show();
+                unlockPassword.value = ""; // 清空密碼輸入框
+            }
+        });
+
+        // 按 Enter 鍵也可以確認解鎖
+        unlockPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                unlockConfirmBtn.click();
+            }
+        });
+    }
+</script>

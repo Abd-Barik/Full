@@ -1,0 +1,362 @@
+{% extends 'layouts/vertical.html' %}
+{% block title %}On hand Quantity and Costing{% endblock title %}
+
+{% block page_content %}
+{% load static i18n %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="{% static 'plugins/datatables/fixedHeader.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<style>
+
+</style>
+{% endblock extra_css %}
+<div class="container-fluid">
+   {% include 'partials/page-title.html' with title='' %}
+   <div class="row mt-3">
+    <div class="col-12 ">
+        
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">On hand Quantity and Costing</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label">Item Name:</label>
+                        <input type="text" class="form-control" name="itemname" value="{{ name }}" readonly>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">On hand Quantity:</label>
+                        <input type="text" class="form-control" name="onhandquantity" value="{{ outqty }}" readonly>
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-12 mt-2">
+                        <label class="form-label d-block mb-2">Label Print</label>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="labelprint" id="labelPrint1" value="1" checked>
+                            <label class="form-check-label" for="labelPrint1">FIFO ( First IN First OUT )</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="labelprint" id="labelPrint2" value="2">
+                            <label class="form-check-label" for="labelPrint2">Last Purchase Unit Price</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="labelprint" id="labelPrint3" value="3">
+                            <label class="form-check-label" for="labelPrint3">Manual</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="labelprint" id="labelPrint4" value="4">
+                            <label class="form-check-label" for="labelPrint4">Moving Average</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="border" style="height: 350px;" id="result-container">
+
+                </div>
+               
+                
+           
+            </div>
+            
+        
+        </div> <!-- end card-->  
+        <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                <i data-lucide="arrow-left" class="fs-sm me-2"></i> Back
+            </button>
+       
+    </div>    
+    </div> <!-- end col-->
+  </div>
+</div>
+
+
+
+{% include "pages/itemmaster/stock_item_master_delete_modal.html" %}
+
+{% endblock page_content %}
+{% block extra_javascript %}
+
+<!-- Datatables js -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/fixedHeader.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.fixedHeader.min.js' %}"></script>
+
+<!-- Page js -->
+
+<script src="{% static 'js/pages/itemmaster/service_item_master.js' %}"></script>
+
+
+<script>
+// 定义每个方法需要显示的字段
+const METHOD_FIELDS = {
+    '1': [
+        { key: 'trntype', label: 'Type' },
+        { key: 'trndate', label: 'Date' },
+        { key: 'itemno', label: 'Item No.' },
+        { key: 'itemname', label: 'Description' },
+        { key: 'StockIN', label: 'In Quantity' },
+        { key: 'unitcost', label: 'Unit Cost' },
+        { key: 'Quantity', label: 'Quantity' },
+        { key: 'TotalCost', label: 'Total Cost' }
+    ],
+    '2': [
+        { key: 'item_no', label: 'Item No.' },
+        { key: 'itemname', label: 'Description' },
+        { key: 'unitcost', label: 'Unit Cost' },
+        { key: 'Quantity', label: 'Quantity' },
+        { key: 'TotalCost', label: 'Total Cost' },
+        { key: 'LastPurchaseDate', label: 'Last Purchase Date' }
+    ],
+    '3': [
+        { key: 'itemno', label: 'Item No.' },
+        { key: 'itemname', label: 'Description' },
+        { key: 'unitcost', label: 'Unit Cost' },
+        { key: 'Quantity', label: 'Quantity' },
+        { key: 'TotalCost', label: 'Total Cost' }
+    ],
+    '4': [
+        { key: 'itemno', label: 'Item No.' },
+        { key: 'itemname', label: 'Description' },
+        { key: 'unitcost', label: 'Unit Cost' },
+        { key: 'Quantity', label: 'Quantity' },
+        { key: 'TotalCost', label: 'Total Cost' }
+    ]
+};
+
+// 封装 API 调用和数据渲染逻辑
+function loadStockData(method) {
+    // 从当前 URL 提取 itemrno
+    let pathParts = window.location.pathname.split("/"); 
+    let itemrno = pathParts[pathParts.length - 2];
+
+    // 拼接完整 API URL
+    let apiUrl = `/api/stock_item_master/onhandquantity/${encodeURIComponent(itemrno)}/${encodeURIComponent(method)}/`;
+
+    console.log("Calling:", apiUrl);
+
+    // 显示加载状态
+    let container = document.getElementById("result-container");
+    container.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted">Loading Method ${method} data...</p>
+            </div>
+        </div>
+    `;
+
+    // 调用 API
+    fetch(apiUrl, { method: "GET" })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("Response:", data);
+            renderListLayout(data, method);
+        })
+        .catch(err => {
+            console.error("API error:", err);
+            container.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center h-100">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Error!</strong> Failed to load data for Method ${method}.
+                        <br><small class="text-muted mt-1 d-block">Please try again or contact support.</small>
+                    </div>
+                </div>
+            `;
+        });
+}
+
+// 列表布局渲染
+function renderListLayout(data, method) {
+    let container = document.getElementById("result-container");
+    container.innerHTML = ""; // 清空旧内容
+
+    let rows = Array.isArray(data) ? data : [data];
+    let fields = METHOD_FIELDS[method] || [];
+
+    if (rows.length === 0) {
+        container.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>No Data Found</strong>
+                    <br><small class="text-muted mt-1 d-block">No records available for Method ${method}.</small>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // 创建滚动容器
+    let scrollContainer = document.createElement("div");
+    scrollContainer.className = "h-100 overflow-auto p-3";
+    container.appendChild(scrollContainer);
+
+    const METHOD_NAMES = {
+    '1': 'FIFO ( First IN First OUT )',
+    '2': 'Last Purchase Unit Price',
+    '3': 'Manual',
+    '4': 'Moving Average'
+};
+
+// 找到对应名字，没有就用默认
+const methodName = METHOD_NAMES[method] || `Method ${method}`;
+
+// 生成标题
+let titleDiv = document.createElement("div");
+titleDiv.className = "d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom";
+titleDiv.innerHTML = `
+    <h5 class="mb-0 text-primary">
+        <i class="bi bi-gear-fill me-2"></i>${methodName} Results
+    </h5>
+    <span class="badge bg-primary fs-6">${rows.length} record${rows.length > 1 ? 's' : ''}</span>
+`;
+scrollContainer.appendChild(titleDiv);
+
+    // 渲染每条记录
+    rows.forEach((row, index) => {
+        let listDiv = document.createElement("div");
+        listDiv.className = "card mb-3 shadow-sm";
+        
+        let listContent = `
+            <div class="card-body">
+                ${rows.length > 1 ? `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="card-title mb-0 text-primary">
+                            <i class="bi bi-box-seam me-2"></i>Record ${index + 1}
+                        </h6>
+                        <span class="badge bg-secondary">Method ${method}</span>
+                    </div>
+                ` : ''}
+                <div class="list-group list-group-flush">
+                    ${fields.map(field => {
+                        let value = getFieldValue(row, field.key);
+                        let formatted = formatFieldValue(field.key, value);
+                        let isNA = formatted === 'N/A';
+                        let isImportant = ['item_no', 'description', 'total_cost'].includes(field.key);
+                        
+                        return `
+                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2 ${isImportant ? 'bg-light rounded mb-1' : ''}">
+                                <span class="text-muted ${isImportant ? 'fw-semibold' : ''}">${field.label}:</span>
+                                <span class="${isNA ? 'text-muted fst-italic' : isImportant ? 'fw-bold text-dark' : 'fw-semibold'} ${isImportant ? 'fs-6' : ''}">${formatted}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+        
+        listDiv.innerHTML = listContent;
+        scrollContainer.appendChild(listDiv);
+
+        // 如果有多条记录且不是最后一条，添加分隔线
+        if (rows.length > 1 && index < rows.length - 1) {
+            let separator = document.createElement("div");
+            separator.className = "text-center my-3";
+            separator.innerHTML = '<hr class="border-2 opacity-25" style="width: 50%; margin: 0 auto;">';
+            scrollContainer.appendChild(separator);
+        }
+    });
+}
+
+// 获取字段值（支持多种可能的字段名）
+function getFieldValue(row, key) {
+    // 尝试多种可能的字段名格式
+    const possibleKeys = [
+        key,
+        key.toLowerCase(),
+        key.toUpperCase(),
+        key.replace(/_/g, ''),
+        key.replace(/_/g, ' '),
+        key.replace(/\s/g, '_'),
+        key.replace(/\./g, '_'),
+        key.replace(/\./g, ''),
+    ];
+
+    for (let possibleKey of possibleKeys) {
+        if (row.hasOwnProperty(possibleKey)) {
+            return row[possibleKey];
+        }
+    }
+
+    return null;
+}
+
+// 格式化字段值 - 不使用小数点
+function formatFieldValue(key, value) {
+    if (value === null || value === undefined || value === '') {
+        return 'N/A';
+    }
+    
+    const lowerKey = key.toLowerCase();
+    
+    // 格式化日期字段
+    if (lowerKey.includes('date')) {
+        try {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+                return date.toLocaleDateString();
+            }
+        } catch (e) {
+            // 如果不是有效日期，返回原值
+        }
+    }
+    
+    // 格式化货币字段 - 不显示小数点
+    if (lowerKey.includes('cost') || lowerKey.includes('price')) {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            return '$' + Math.round(num).toLocaleString();
+        }
+    }
+    
+    // 格式化数量字段 - 不显示小数点
+    if (lowerKey.includes('quantity')) {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            return Math.round(num).toLocaleString();
+        }
+    }
+    
+    return String(value);
+}
+
+// 主要事件监听器设置
+document.addEventListener('DOMContentLoaded', function() {
+    const radioButtons = document.querySelectorAll('input[name="labelprint"]');
+    
+    // 为每个 radio 按钮添加事件监听器
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                loadStockData(this.value);
+            }
+        });
+    });
+
+    // 默认选中第一个 radio 并加载数据
+    if (radioButtons.length > 0) {
+        radioButtons[0].checked = true;
+        loadStockData(radioButtons[0].value);
+    }
+});
+</script>
+
+
+{% endblock extra_javascript %}

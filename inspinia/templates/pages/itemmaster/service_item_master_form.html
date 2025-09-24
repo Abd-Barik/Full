@@ -1,0 +1,290 @@
+{% extends 'layouts/vertical.html' %}
+{% block title %}Service Item Master{% endblock title %}
+
+{% block page_content %}
+{% load static i18n %}
+
+{% block extra_css %}
+<link href="{% static 'plugins/datatables/responsive.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock extra_css %}
+
+<div class="container-fluid">
+{% include 'partials/page-title.html' with title='Service Item Master' %}
+
+        <form id="medicationForm">
+            {% csrf_token %}
+            <div class="row g-2">
+                <!-- Left Column -->
+                <div class="col-xxl-9 ">
+                    <div class="card ">
+                        <div class="card-header">
+                            <h4 class="card-title">Service Item Information</h4>
+                        </div>
+                        <div class="card-body">
+                        
+                            <!-- Item Information -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-9">
+                                    <label class="form-label">Item No.:</label>
+                                    <input type="text" class="form-control" name="itemno" >
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="istaxable" id="sstTaxable">
+                                        <label class="form-check-label" for="sstTaxable">SST Taxable Item</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-9">
+                                    <label class="form-label">Item Name:</label>
+                                    <input type="text" class="form-control" name="itemname" >
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="isactive" id="active" checked>
+                                        <label class="form-check-label" for="active">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-9">
+                                    <label class="form-label">Barcode:</label>
+                                    <input type="text" class="form-control" name="barcode">
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="labelprint" id="labelPrint" checked>
+                                        <label class="form-check-label" for="labelPrint">Label Print</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Item Type:</label>
+                                    <select class="form-select" name="itemtype" data-choices data-choices-search-true>
+                                        {% for type in types %}
+                                        <option value="{{ type.itemtype_rno }}">
+                                            {{ type.itemtype }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Item Group:</label>
+                                    <select class="form-select" name="itemgroup" data-choices data-choices-search-true>
+                                        {% for group in groups %}
+                                        <option value="{{ group.itemgrp_rno }}">
+                                            {{ group.itemgroup }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Category:</label>
+                                    <select class="form-select" name="category_rno" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.itemcategory_rno }}">
+                                            {{ category.category }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Billing Group:</label>
+                                    <select class="form-select" name="billgrp_rno" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for billgroup in billgroups %}
+                                        <option value="{{ billgroup.billgrp_rno }}">
+                                            {{ billgroup.billgrp_description }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Classification:</label>
+                                    <select class="form-select" name="classificationcode" data-choices data-choices-search-true>
+                                        <option></option>
+                                        {% for classification in classifications %}
+                                        <option value="{{ classification.code }}">
+                                            {{ classification.description }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Cost Price:</label>
+                                    <input type="text" class="form-control" name="unitcost">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Base Price:</label>
+                                    <input type="text" class="form-control" name="unitsellprice">
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="col-xxl-3 ">
+                    <div class="card ">
+                        <div class="card-header">
+                            <h6 class="card-title">Price for Malaysian Citizen</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Normal Price:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 1:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice2">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 2:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice3">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 3:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice4">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 4:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice5">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Buy Med:</label>
+                                    <input type="number" step="0.01" class="form-control" name="salesprice6">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="card collapsible" >
+                        <div class="card-header">
+                            <h6 class="card-title">Price for Non-Citizen</h6>
+                            <div class="card-action">
+                                <a href="#!" class="card-action-item" data-action="card-toggle"><i class="ti ti-chevron-down"></i></a>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="card-body" style="display: none; transition:max-height 0.4s ease;" >
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Normal Price:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 1:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice2">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 2:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice3">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 3:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice4">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Price 4:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice5">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Buy Med:</label>
+                                    <input type="number" step="0.01" class="form-control" name="x_salesprice6">
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label mb-0">Tax Code:</label>
+                                    <select class="form-select" name="taxcode" data-choices data-choices-search-true>
+                                        <option>Select Tax</option>
+                                        {% for tax in taxes %}
+                                        <option value="{{tax.svrtaxcode}}">
+                                            {{tax.svrtaxcode}} -{{tax.description}}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="istaxinclusive" id="priceInclusiveTax">
+                                        <label class="form-check-label" for="priceInclusiveTax">
+                                            Price Inclusive Tax
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    
+<!-- Action Buttons -->
+    <div class="mt-2 mb-4 d-flex gap-2 justify-content-center">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                <i data-lucide="arrow-left" class="fs-sm me-2"></i> Back
+            </button>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i>Save
+        </button>
+    </div>
+</div>
+
+{% include "partials/customer/toast_message.html" %}
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<script src="{% static 'js/pages/form-choice.js' %}"></script>
+<script src="{% static 'js/pages/itemmaster/service_item_master_viewedit.js' %}"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('click', function(e) {
+    const toggleBtn = e.target.closest('[data-action="card-toggle"]');
+    if (toggleBtn) {
+        const card = toggleBtn.closest('.card');
+        const body = card.querySelector('.card-body');
+        const icon = toggleBtn.querySelector('i');
+
+        if (body) {
+            // 切换显示
+            body.style.display = (body.style.display === 'none' || body.style.display === '') 
+                ? 'block' 
+                : 'none';
+
+            // 切换图标（down ↔ up）
+            if (icon) {
+                icon.classList.toggle('ti ti-chevron-down');
+                icon.classList.toggle('ti ti-chevron-up');
+            }
+        }
+    }
+});
+</script>
+
+{% endblock extra_javascript %}

@@ -1,0 +1,243 @@
+{% extends 'layouts/vertical.html' %}
+
+{% load static i18n %}
+
+{% block title %}Dashboard{% endblock title %}
+
+{% block page_content %}
+
+{% block extra_css %}
+<style>
+  .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+    }
+    
+    /* Tab Styles */
+    .tab-header {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        padding: 0;
+        margin-bottom: 0;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+    }
+    
+    .tab-button {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 12px 20px;
+        font-weight: 500;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .tab-button:first-child {
+        border-radius: 8px 0 0 0;
+    }
+    
+    .tab-button:last-child {
+        border-radius: 0 8px 0 0;
+    }
+    
+    .tab-button:hover {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .tab-button.active {
+        background: #fff;
+        color: #0d6efd;
+        font-weight: 600;
+        border-bottom: 2px solid #0d6efd;
+        margin-bottom: -1px;
+        z-index: 1;
+    }
+    
+    .tab-content {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        padding: 20px;
+        min-height: 550px;
+    }
+    
+    .tab-pane {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .tab-pane.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<!-- Datatables css -->
+<link href="{% static 'plugins/datatables/responsive.bootstrap5.min.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
+<!-- jVector Map CSS-->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/grid.css' %}">
+
+<!-- Dropzone Plugin CSS -->
+<link href="{% static 'plugins/dropzone/dropzone.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+<div class="container-fluid">
+  <div class="row mt-2">
+    <div class="col-12">
+      
+      <!-- Tab Header moved outside -->
+      <div class="tab-header">
+        <button class="tab-button active" onclick="switchTab('main')">Main Page</button>
+        <button class="tab-button" onclick="switchTab('register')">Registration</button>
+      </div>
+
+      <!-- Tab Content moved outside -->
+      <div class="tab-content">
+        
+        <!-- Main Page Tab -->
+        <div id="main-tab" class="tab-pane active">
+          
+              <!-- Main tab content goes here -->
+              {% include "pages/queue.html" %}
+           
+        </div>
+
+        <!-- Registration Tab -->
+        <div id="register-tab" class="tab-pane">
+         
+              <!-- Registration tab content goes here -->
+              
+
+              {% include "partials/customer_data.html" %}
+                          
+        </div>
+
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+{% endblock page_content %}
+
+{% block extra_javascript %}
+  {{ block.super }}
+  <!-- Chatbot Widget -->
+  <script src="https://cdn.jsdelivr.net/npm/rasa-webchat/lib/index.js"></script>
+  {{ block.super }}
+  <!-- Rasa Webchat -->
+  <div id="webchat"></div>
+  <script src="https://cdn.jsdelivr.net/npm/rasa-webchat@1.0.1/lib/index.js"></script>
+  <script>
+    WebChat.default.init({
+      selector: "#webchat",
+      initPayload: "/greet",
+      customData: { language: "zh" },
+      socketUrl: "http://localhost:5005", // 改成你的API
+      title: "AI 助手",
+      subtitle: "随时问我",
+      showCloseButton: true,
+      showFullScreenButton: true
+    });
+  </script>
+  </script>
+<!-- ECharts -->
+<script src="{% static 'plugins/echarts/echarts.min.js' %}"></script>
+
+<!-- JVector Maps -->
+<script src="{% static 'plugins/jsvectormap/jsvectormap.min.js' %}"></script>
+<script src="{% static 'js/maps/world.js' %}"></script>
+
+<!-- Custom table & dashboard -->
+<script src="{% static 'js/pages/custom-table.js' %}"></script>
+<script src="{% static 'js/pages/dashboard-2.js' %}"></script>
+
+<!-- jQuery (只保留一次) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+<!-- Bootstrap 5 JS (只保留一次) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Datatables -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/responsive.bootstrap5.min.js' %}"></script>
+
+<!-- Page specific JS -->
+<script src="{% static 'js/pages/panelcompany.js' %}"></script>
+<script src="{% static 'js/pages/datatables-column-search.js' %}"></script>
+<script src="{% static 'js/pages/index.js' %}"></script>
+
+<script>
+function switchTab(tabName, buttonElement = null) {
+  // Hide all tab panes
+  document.querySelectorAll('.tab-pane').forEach(pane => {
+    pane.classList.remove('active');
+  });
+
+  // Remove active class from all tab buttons
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.classList.remove('active');
+  });
+
+  // Show selected tab pane
+  document.getElementById(tabName + '-tab').classList.add('active');
+
+  // Add active class to clicked button
+  if (buttonElement) {
+    buttonElement.classList.add('active');
+  } else {
+    // 如果没有传入按钮元素，通过 tabName 找到对应按钮
+    const targetButton = document.querySelector(`[onclick*="${tabName}"]`) || 
+                        document.querySelector(`[data-tab="${tabName}"]`);
+    if (targetButton) {
+      targetButton.classList.add('active');
+    }
+  }
+}
+
+function switchTabAndRefresh(tabName, soundFile = '/static/sounds/ding-dong.mp3') {
+    // 先切换标签页
+    switchTab(tabName);
+    
+    // 播放音效
+    setTimeout(() => {
+        const sound = new Audio(soundFile);
+        sound.play().catch(err => console.warn('无法播放音效：', err));
+    }, 150);
+    
+    // 根据标签页类型执行相应的刷新操作
+    setTimeout(() => {
+        switch(tabName) {
+            case 'appointments':
+            case 'queue':
+                loadAppointments();
+                break;
+            // 可以添加其他标签页的刷新逻辑
+            case 'patients':
+                // loadPatients();
+                break;
+            default:
+                // 如果不确定，可以尝试刷新当前可见的表格
+                if (typeof loadAppointments === 'function') {
+                    loadAppointments();
+                }
+        }
+    }, 300);
+}
+</script>
+{% endblock extra_javascript %}

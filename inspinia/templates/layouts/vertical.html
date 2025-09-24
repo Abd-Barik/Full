@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% load static i18n %}
+
+{% block html_attribute %}{% endblock html_attribute %}
+
+{% block title %}{% endblock title %}
+
+{% block extra_css %}
+
+
+</style>
+{% endblock extra_css %}
+
+{% block body_attribute %}{% endblock body_attribute %}
+
+{% block preloader %}{% endblock preloader %}
+
+{% block content %}
+
+<div class="wrapper">
+
+  {% block disable_sidebar %}
+    {% include 'partials/sidenav.html' %}
+  {% endblock disable_sidebar %}
+
+  {% block disable_topbar %}
+    {% include 'partials/topbar.html' %}
+  {% endblock disable_topbar %}
+
+  <div class="content-page">
+    {% block page_content %}{% endblock page_content %}
+    {% block disable_footer %}
+      {% include 'partials/footer.html' %}
+    {% endblock disable_footer %}
+    
+  </div>
+
+  {% block right_sidebar %}{% endblock right_sidebar %}
+</div>
+
+{% include 'partials/customizer.html' %}
+
+{% block modal %}{% endblock modal %}
+
+{% endblock content %}
+
+{% block extra_javascript %}
+
+{% endblock extra_javascript %}

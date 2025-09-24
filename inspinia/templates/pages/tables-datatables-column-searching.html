@@ -1,0 +1,48 @@
+{% extends 'layouts/vertical.html' %}
+
+
+{% load static i18n %}
+
+
+{% block title %}Customer Management{% endblock title %}
+
+{% block extra_css %}
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/grid.css' %}">
+
+{% endblock extra_css %}
+
+{% block page_content %}
+<div class="container-fluid">
+
+  {% include 'partials/page-title.html' with title='Customer Data' subtitle='DataTables' %}
+{% include "partials/customer_data.html" %}
+
+</div>
+{% endblock page_content %}
+
+{% block extra_javascript %}
+
+<!-- jQuery (如果项目中没有，请确保包含) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<!-- Datatables js -->
+<script src="{% static 'plugins/datatables/dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables/responsive.bootstrap5.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Page js -->
+ <script src="{% static 'js/pages/panelcompany.js' %}"></script>
+<script src="{% static 'js/pages/datatables-column-search.js' %}"></script>
+
+
+{% endblock extra_javascript %}

@@ -1,0 +1,75 @@
+<style>
+     .modal-body {
+            max-height: 70vh; /* 可视窗口高度的 70% */
+            overflow-y: hidden; /* 超过时允许纵向滚动 */
+            overflow-x: hidden; /* 禁止横向滚动，保持布局整洁 */
+            padding-right: 10px; /* 给滚动条留点空间 */
+        }
+</style>
+<div class="modal fade" id="panelCompanyModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog  modal-lg">
+        <div class="modal-content" >
+            
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">Registration Dialog</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                
+                <div class="border p-3 mb-3 rounded">
+                    <form id="panelcompany_search_filter">
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label for="" class="form-label">Company A/C:</label>
+                            <input type="text" id="pcompany_no" name="pcompany_no" class="form-control" >
+                        </div>
+                    
+                        <div class="col-md-5">
+                            <label for="" class="form-label">Company Name:</label>
+                            <input type="text" id="pcompanyname" name="pcompanyname" class="form-control" >
+                        </div>
+                        <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" >
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="panelcomp-table-container border p-3 rounded" style="max-height: 50vh; overflow-y: auto;">
+                    <table id="panelcomp-list-table" class="table table-striped align-middle mb-0" >
+                    <thead class="thead-sm text-uppercase fs-xxs">
+                        <tr>
+                        <th data-field="index">No.</th>
+                        <th data-field="branch">Branch/Department</th>
+                        <th data-field="pcompany_no">Company A/C</th>
+                        <th data-field="pcompany_name">Company Name</th>
+                        <th data-field="action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="" style="height: 50vh; overflow-y:auto;">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                    </table>
+                    </div>
+                    
+                    <!-- 分页容器 -->
+                    <div class="pagination-container" id="panelcompany-paginationContainer">
+                    <!-- 分页内容将通过JavaScript动态生成 -->
+                    </div>
+                    
+                </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+</div>
