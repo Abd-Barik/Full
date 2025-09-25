@@ -1,0 +1,182 @@
+<style>
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: #2c3e50;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #626568ff;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #f1f1f3ff;
+      background: #727272ff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .form-group input:valid {
+      border-color: #f1f1f3ff;
+    }
+
+    .password-group {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 70%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #ffffffff;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .password-toggle:hover {
+      color: #848792ff;
+    }
+</style>
+{% extends 'base.html' %}
+
+{% load static i18n crispy_forms_tags %}
+
+{% block title %}Login{% endblock title %}
+
+{% block body_attribute %}class="authentication-bg"{% endblock body_attribute %}
+
+{% block content %}
+<div class="auth-box overflow-hidden align-items-center d-flex">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xxl-4 col-md-6 col-sm-8">
+        <div class="auth-brand text-center mb-4">
+          <a href="/" class="logo-dark">
+            <img src="{% static 'images/logo-black.png' %}" alt="dark logo" height="32">
+          </a>
+          <a href="/" class="logo-light">
+            <img src="{% static 'images/logo.png' %}" alt="logo" height="32">
+          </a>
+          <h4 class="fw-bold mt-3">Welcome to IN+</h4>
+          <p class="text-muted w-lg-75 mx-auto">
+            Let’s get you signed in. Enter your email and password to continue.
+          </p>
+        </div>
+
+        <div class="card p-4 rounded-4">
+
+
+          <form id="custom-login-form" novalidate class="authentication-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required value="admin">
+            </div>
+            <div class="form-group password-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required value="secret123">
+                <button type="button" class="password-toggle" id="passwordToggle">👁</button>
+            </div>
+            <div class="mb-1 text-center d-grid">
+              <button class="btn btn-primary" id="signin-subscription-btn" type="button">Sign In & Get Subscriptions</button>
+            </div>
+          </form>
+          <div id="login-response" class="mt-3"></div>
+          <div id="subscriptions-response" class="mt-2"></div>
+
+          <p class="text-muted text-center mt-4 mb-0">
+            New here?
+            <a href="{% url 'account_signup' %}"
+               class="text-decoration-underline link-offset-3 fw-semibold">
+              Create an account
+            </a>
+          </p>
+        </div>
+
+        <p class="text-center text-muted mt-4 mb-0">
+          © 2014 -
+          <script>document.write(new Date().getFullYear())</script>
+          INSPINIA — by <span class="fw-semibold">WebAppLayers</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_javascript %}
+<script>
+  document.ready = function() {
+   let sign = 'hi';
+   console.log(sign);
+  };
+  document.getElementById('passwordToggle').addEventListener('click', function() {
+    var pwd = document.getElementById('password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('signin-subscription-btn').addEventListener('click', async function() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginResponseDiv = document.getElementById('login-response');
+    const subscriptionsResponseDiv = document.getElementById('subscriptions-response');
+    loginResponseDiv.innerHTML = 'Logging in...';
+    subscriptionsResponseDiv.innerHTML = '';
+    let token = '';
+    try {
+      // Step 1: Login
+      const loginRes = await fetch('https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+      const loginData = await loginRes.json();
+      loginResponseDiv.innerHTML = '<pre>' + JSON.stringify(loginData, null, 2) + '</pre>';
+      if (!loginData.token) {
+        subscriptionsResponseDiv.innerHTML = '<span style="color:red">No token received. Cannot fetch subscriptions.</span>';
+        return;
+      }
+      token = loginData.token;
+      // Step 2: Get Subscriptions
+      subscriptionsResponseDiv.innerHTML = 'Loading subscriptions...';
+      const subsRes = await fetch('https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/subscriptions', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+          'ngrok-skip-browser-warning': '69420',
+        }
+      });
+      const subsData = await subsRes.json();
+      subscriptionsResponseDiv.innerHTML = '<pre>' + JSON.stringify(subsData, null, 2) + '</pre>';
+    } catch (err) {
+      loginResponseDiv.innerHTML = '<span style="color:red">Error: ' + err + '</span>';
+      subscriptionsResponseDiv.innerHTML = '';
+    }
+  });
+</script>
+{% endblock %}

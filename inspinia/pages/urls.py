@@ -16,6 +16,9 @@ urlpatterns = [
     path("api/delete-customer/", views.delete_customer, name="delete_customer"),
     path('api/customer/save/', views.save_customer, name='save_customer'),
     path('api/customer/update/', views.update_customer, name='update_customer'),
+
+    # admin
+    path("admin-login/", views.admin_login_api, name="admin_login"),
    
     path('tables-datatables-columns/', views.customer_form_select, name='new-customer-form'),
     path('api/customer_detail/<int:customer_rno>/', views.view_customer_details, name='view_customer_detail'),

@@ -1,3 +1,6 @@
+# --- Token API for testing/demo ---
+from django.views.decorators.http import require_GET
+
 from django.shortcuts import render
 from django.template import TemplateDoesNotExist
 from django.db.models import Q
@@ -53,6 +56,20 @@ def dashboard(request):
         "group": request.session['group'],
         "branch_rno": request.session['branch_rno']
     })
+
+# admin
+def admin_login_api(request):
+    return render(request, "pages/API/admin-login.html")
+
+@require_GET
+def get_demo_token(request):
+    import requests
+    try:
+        resp = requests.get("https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/subscriptions")
+        resp.raise_for_status()
+        return JsonResponse(resp.json(), safe=False)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @login_required
