@@ -1,0 +1,20 @@
+{
+  "login": "Login",
+  "username": "Username",
+  "password": "Password",
+  "sign_in": "Sign In",
+  "sign_in_get_subscriptions": "Sign In & Get Subscriptions",
+  "token": "Token",
+  "expires_in": "Expires In",
+  "client_subscriptions": "Client Subscriptions",
+  "domain": "Domain",
+  "db": "DB",
+  "branch_id": "Branch ID",
+  "branch_number": "Branch No",
+  "branch_name": "Branch Name",
+  "register_number": "Register No",
+  "others": "Others",
+  "loading": "Loading...",
+  "number_token": "No token info found. Please sign in again.",
+  "number_subscriptions": "No subscriptions found."
+}

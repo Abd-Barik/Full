@@ -1,3 +1,5 @@
+# Proxy endpoints for external API (CORS bypass)
+from .views import proxy_api_login, proxy_api_subscriptions
 from django.urls import path, include
 from . import views
 from . import index_views
@@ -19,6 +21,13 @@ urlpatterns = [
 
     # admin
     path("admin-login/", views.admin_login_api, name="admin_login"),
+
+    #client subscription
+    path('client-subscriptions/', views.client_subscriptions, name='client_subscriptions'),
+
+    # Proxy endpoints for external API (CORS bypass)
+    path('api/proxy/login/', proxy_api_login, name='proxy_api_login'),
+    path('api/proxy/subscriptions/', proxy_api_subscriptions, name='proxy_api_subscriptions'),
    
     path('tables-datatables-columns/', views.customer_form_select, name='new-customer-form'),
     path('api/customer_detail/<int:customer_rno>/', views.view_customer_details, name='view_customer_detail'),

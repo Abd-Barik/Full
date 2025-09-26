@@ -1,3 +1,36 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST, require_GET
+
+# Proxy endpoint for login (POST)
+@csrf_exempt
+@require_POST
+def proxy_api_login(request):
+    import requests
+    try:
+        data = request.body
+        headers = {'Content-Type': 'application/json'}
+        resp = requests.post('http://subscription.powersoft.asia/api/v2/login', data=data, headers=headers)
+        return JsonResponse(resp.json(), status=resp.status_code, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# Proxy endpoint for subscriptions (GET)
+@csrf_exempt
+@require_GET
+def proxy_api_subscriptions(request):
+    import requests
+    try:
+        token = request.headers.get('Authorization')
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        if token:
+            headers['Authorization'] = token
+        headers['ngrok-skip-browser-warning'] = '69420'
+        resp = requests.get('http://subscription.powersoft.asia/api/v2/subscriptions', headers=headers)
+        return JsonResponse(resp.json(), status=resp.status_code, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 # --- Token API for testing/demo ---
 from django.views.decorators.http import require_GET
 
@@ -25,6 +58,9 @@ from django.db.models import Q
 from .models import Customer
 from .serializers import CustomerSerializer
 import math
+import base64
+import requests
+from django.http import JsonResponse, Http404
 # Create your views here.
 
 
@@ -63,13 +99,17 @@ def admin_login_api(request):
 
 @require_GET
 def get_demo_token(request):
-    import requests
     try:
-        resp = requests.get("https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/subscriptions")
+        resp = requests.get("http://subscription.powersoft.asia/api/v2/subscriptions")
         resp.raise_for_status()
         return JsonResponse(resp.json(), safe=False)
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+    
+# client-subscrp
+@login_required
+def client_subscriptions(request):
+    return render(request, "pages/API/client-subscriptions.html")
 
 
 @login_required

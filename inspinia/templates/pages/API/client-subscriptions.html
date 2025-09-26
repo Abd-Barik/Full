@@ -1,0 +1,222 @@
+{% extends 'layouts/vertical.html' %}
+
+{% load static i18n %}
+
+{% block title %}Client Subscriptions{% endblock title %}
+
+{% block page_content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h4 class="mb-3">API Token Info</h4>
+          <div id="token-info" class="mb-3"></div>
+        </div>
+      </div>
+       <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Client Subscriptions</h5>
+                            <button class="btn btn-primary btn-sm" onclick="refreshData()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="subscriptions-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Branch</th>
+                                        <th>Company</th>
+                                        <th>Register No</th>
+                                        <th>Domain</th>
+                                        <th>Email</th>
+                                        <th>Subscription Price</th>
+                                        <th>Dealer Price</th>
+                                        <th>Renew Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Days Remaining</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated by DataTables -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+    </div>
+  </div>
+</div>
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Get token from URL parameters
+    var token = new URLSearchParams(window.location.search).get('token');
+    console.log('Token from URL:', token);
+    $('#subscriptions-table').DataTable({
+        "processing": true,
+        "serverSide": false,
+        "ajax": {
+            "url": "/api/proxy/subscriptions/", // Update this URL to match your Django URL pattern
+            "type": "GET",
+            "headers": {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + (new URLSearchParams(window.location.search).get('token') || ''),
+                'ngrok-skip-browser-warning': '69420',
+            },
+            "dataSrc": function (json) {
+                console.log('Full response:', json);
+                // If the response is directly an array
+                if (Array.isArray(json)) {
+                    return json;
+                }
+                // If the response has a data property containing the array
+                if (json.data && Array.isArray(json.data)) {
+                    return json.data;
+                }
+                // If neither, return empty array
+                console.warn('Unexpected data format:', json);
+                return [];
+            },
+            
+            "error": function(xhr, error, code) {
+                console.log('Error:', error);
+                console.log('Code:', code);
+                console.log('Response:', xhr.responseText);
+                alert('Error loading data: ' + error);
+            }
+        },
+        "columns": [
+            { 
+                "data": "branchname",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "branchcompany",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "domain",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "registerno",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "branch_rno",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "email",
+                "defaultContent": "Not provided",
+                "render": function(data, type, row) {
+                    return data && data.trim() !== "" ? data : "Not provided";
+                }
+            },
+            { 
+                "data": "subprice",
+                "render": function(data, type, row) {
+                    return data ? '$' + parseFloat(data).toFixed(2) : '$0.00';
+                }
+            },
+            { 
+                "data": "expirydate",
+                "render": function(data, type, row) {
+                    if (data) {
+                        var date = new Date(data);
+                        return date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    }
+                    return "N/A";
+                }
+            },
+            { 
+                "data": "days_diff",
+                "render": function(data, type, row) {
+                    return data ? Math.floor(data) + ' days' : 'N/A';
+                }
+            },
+            { 
+                "data": "status_text",
+                "render": function(data, type, row) {
+                    var statusClass = row.status_class || 'table-secondary';
+                    var badgeClass = 'primary';
+                    
+                    if (statusClass === 'table-warning') {
+                        badgeClass = 'warning';
+                    } else if (statusClass === 'table-danger') {
+                        badgeClass = 'danger';
+                    } else if (statusClass === 'table-primary') {
+                        badgeClass = 'primary';
+                    }
+                    
+                    return '<span class="badge badge-' + badgeClass + '">' + 
+                           (data || 'Unknown') + '</span>';
+                }
+            },
+            { 
+                "data": "createdby",
+                "defaultContent": "N/A"
+            },
+            { 
+                "data": "islocked",
+                "render": function(data, type, row) {
+                    return data === "1" ? 
+                        '<span class="badge badge-danger">Locked</span>' : 
+                        '<span class="badge badge-success">Active</span>';
+                }
+            }
+        ],
+        "order": [[ 7, "asc" ]], // Sort by expiry date ascending
+        "pageLength": 25,
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "responsive": true,
+        "language": {
+            "processing": "Loading subscriptions...",
+            "emptyTable": "No subscription data available",
+            "info": "Showing _START_ to _END_ of _TOTAL_ subscriptions",
+            "infoEmpty": "Showing 0 to 0 of 0 subscriptions",
+            "infoFiltered": "(filtered from _MAX_ total subscriptions)",
+            "lengthMenu": "Show _MENU_ subscriptions per page",
+            "search": "Search subscriptions:",
+            "zeroRecords": "No matching subscriptions found"
+        },
+        "createdRow": function(row, data, dataIndex) {
+            // Apply row class based on status
+            if (data.status_class) {
+                $(row).addClass(data.status_class);
+            }
+            
+            // Highlight rows that expire soon (less than 7 days)
+            if (data.days_diff && data.days_diff < 7) {
+                $(row).addClass('table-warning');
+            }
+            
+            // Highlight expired rows
+            if (data.days_diff && data.days_diff < 0) {
+                $(row).addClass('table-danger');
+            }
+        }
+    });
+
+    // Refresh data every 5 minutes
+    setInterval(function() {
+        $('#subscriptions-table').DataTable().ajax.reload(null, false);
+    }, 300000);
+});
+</script>
+{% endblock extra_javascript %}
+
+

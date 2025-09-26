@@ -147,7 +147,7 @@
     let token = '';
     try {
       // Step 1: Login
-      const loginRes = await fetch('https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/login', {
+      const loginRes = await fetch('/api/proxy/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -163,7 +163,7 @@
       token = loginData.token;
       // Step 2: Get Subscriptions
       subscriptionsResponseDiv.innerHTML = 'Loading subscriptions...';
-      const subsRes = await fetch('https://calandra-hebetudinous-palindromically.ngrok-free.dev/api/v2/subscriptions', {
+      const subsRes = await fetch('/api/proxy/subscriptions/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -173,6 +173,11 @@
       });
       const subsData = await subsRes.json();
       subscriptionsResponseDiv.innerHTML = '<pre>' + JSON.stringify(subsData, null, 2) + '</pre>';
+      // Store login and subscription data in localStorage
+      localStorage.setItem('loginData', JSON.stringify(loginData));
+      localStorage.setItem('subscriptionsData', JSON.stringify(subsData));
+      // Redirect to client-subscriptions.html
+      window.location.href = '/client-subscriptions/?token=' + token;
     } catch (err) {
       loginResponseDiv.innerHTML = '<span style="color:red">Error: ' + err + '</span>';
       subscriptionsResponseDiv.innerHTML = '';

@@ -33,25 +33,27 @@ class App {
             lucide.createIcons();
         }
 
-        // Popovers
-        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => {
-            new bootstrap.Popover(el);
-        });
+        if (typeof bootstrap !== 'undefined') {
+            // Popovers
+            document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => {
+                new bootstrap.Popover(el);
+            });
 
-        // Tooltips
-        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-            new bootstrap.Tooltip(el);
-        });
+            // Tooltips
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el);
+            });
 
-        // Offcanvas
-        document.querySelectorAll('.offcanvas').forEach(el => {
-            new bootstrap.Offcanvas(el);
-        });
+            // Offcanvas
+            document.querySelectorAll('.offcanvas').forEach(el => {
+                new bootstrap.Offcanvas(el);
+            });
 
-        // Toasts
-        document.querySelectorAll('.toast').forEach(el => {
-            new bootstrap.Toast(el);
-        });
+            // Toasts
+            document.querySelectorAll('.toast').forEach(el => {
+                new bootstrap.Toast(el);
+            });
+        }
     }
 
     // Preloader
@@ -845,8 +847,8 @@ class Plugins {
 
 class I18nManager {
     constructor({
-        defaultLang = 'en',
-        langPath = 'assets/data/translations/',
+    defaultLang = 'en',
+    langPath = '/static/assets/data/translations/',
         langImageSelector = '#selected-language-image',
         langCodeSelector = '#selected-language-code',
         translationKeySelector = '[data-lang]',
@@ -940,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     new App().init();
     new LayoutCustomizer().init();
     new Plugins().init();
-    new I18nManager().init();
+    new I18nManager({ langPath: '/static/assets/data/translations/' }).init();
 });
 
 
